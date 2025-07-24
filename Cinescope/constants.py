@@ -9,3 +9,4 @@ LOGIN_ENDPOINT = "login"
 USER_ENDPOINT = 'user'
 ADMIN_EMAIL='api1@gmail.com'
 ADMIN_PASSWORD='asdqwe123Q'
+CREATE_PAYMENT='create'

@@ -3,7 +3,26 @@ import requests
 from constants import BASE_URL, USER_ENDPOINT, HEADERS, REGISTER_ENDPOINT, LOGIN_ENDPOINT
 
 
-class TestAuthAPI:
+class TestAuthAPIPositive:
+    def test_register_user(self, test_user):
+        # URL для регистрации
+        register_url = f"{BASE_URL+REGISTER_ENDPOINT}"
+
+        # Отправка запроса на регистрацию
+        register_user_response = requests.post(url=register_url, json=test_user, headers=HEADERS)
+
+        # Логируем ответ для диагностики
+        print(f"Response status: {register_user_response.status_code}")
+        print(f"Response body: {register_user_response.text}")
+
+        # Проверки
+        assert register_user_response.status_code == 201, "Ошибка регистрации пользователя"
+        register_user_response_data = register_user_response.json()
+        assert register_user_response_data["email"] == test_user["email"], "Email не совпадает"
+        assert "id" in register_user_response_data, "ID пользователя отсутствует в ответе"
+        assert "roles" in register_user_response_data, "Роли пользователя отсутствуют в ответе"
+        assert "USER" in register_user_response_data["roles"], "Роль USER должна быть у пользователя"
+
     def test_login_as_user(self, test_user, user_data_for_login):
         register_url = f"{BASE_URL}{REGISTER_ENDPOINT}"
         login_url = f'{BASE_URL}{LOGIN_ENDPOINT}'
@@ -22,25 +41,6 @@ class TestAuthAPI:
         login_as_user_responce = requests.post(login_url, json=admin_data_for_login, headers=HEADERS)
 
         assert login_as_user_responce.status_code == 200, 'Ошибка при попытке залогиниться.'
-
-    def test_register_user(self, test_user):
-        # URL для регистрации
-        register_url = f"{BASE_URL}{REGISTER_ENDPOINT}"
-
-        # Отправка запроса на регистрацию
-        register_user_response = requests.post(register_url, json=test_user, headers=HEADERS)
-
-        # Логируем ответ для диагностики
-        print(f"Response status: {register_user_response.status_code}")
-        print(f"Response body: {register_user_response.text}")
-
-        # Проверки
-        assert register_user_response.status_code == 201, "Ошибка регистрации пользователя"
-        register_user_response_data = register_user_response.json()
-        assert register_user_response_data["email"] == test_user["email"], "Email не совпадает"
-        assert "id" in register_user_response_data, "ID пользователя отсутствует в ответе"
-        assert "roles" in register_user_response_data, "Роли пользователя отсутствуют в ответе"
-        assert "USER" in register_user_response_data["roles"], "Роль USER должна быть у пользователя"
 
     def test_create_user_as_admin(self, admin_auth, test_user_created_by_admin):
         create_user_url = f"{BASE_URL}{USER_ENDPOINT}"

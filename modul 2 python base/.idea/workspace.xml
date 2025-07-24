@@ -5,24 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5a05d5c3-af78-4ef3-941b-4f9eb674bb54" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/../PythonTests/.idea/.name" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../PythonTests/conftest.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../PythonTests/data/config.env" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../PythonTests/data/test_data.json.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../PythonTests/pytest.ini" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../PythonTests/readme.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../PythonTests/test_api.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../PythonTests/utils/helpers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/../PythonTests/.idea/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.name" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../PythonTests/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../PythonTests/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modul 2 python base.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../PythonTests/.idea/PythonTests.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../PythonTests/.idea/modules.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Data Types/boolean/boolean_and_operator.py" beforeDir="false" afterPath="$PROJECT_DIR$/../PythonTests/Data Types/boolean/boolean_and_operator.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Data Types/python_module3_practice.py" beforeDir="false" afterPath="$PROJECT_DIR$/../PythonTests/Data Types/python_module3_practice.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/file.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../PythonTests/file.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/python_modul2_practice.py" beforeDir="false" afterPath="$PROJECT_DIR$/../PythonTests/python_modul2_practice.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Cinescope/ tests/api/test_auth_negative.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Cinescope/ tests/api/test_payment_positive.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Cinescope/ tests/api/conftest.py" beforeDir="false" afterPath="$PROJECT_DIR$/../Cinescope/ tests/api/conftest.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Cinescope/ tests/api/test_auth_positive.py" beforeDir="false" afterPath="$PROJECT_DIR$/../Cinescope/ tests/api/test_auth_positive.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Cinescope/constants.py" beforeDir="false" afterPath="$PROJECT_DIR$/../Cinescope/constants.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -39,6 +26,18 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "Roman9898CodeWarrior"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/Roman9898CodeWarrior/Cinescope",
+    "accountId": "60acf1dd-6ec3-4cd7-ad29-a9f2df785cd8"
+  }
+}]]></component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 1
 }</component>
@@ -47,33 +46,33 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;Python tests.Python tests for test_addition.TestMyFunctions.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests for test_addition.test_addition.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests for test_addition.test_api.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests for test_addition.test_post_request.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests for test_addition.test_sum.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests for test_api.test_api.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.Python tests for test_api.test_post_practice.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests for test_example.test_google.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests in test_addition.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python.Hello.executor&quot;: &quot;Run&quot;,
-    &quot;Python.boolean_and_operator.executor&quot;: &quot;Run&quot;,
-    &quot;Python.python_base.executor&quot;: &quot;Run&quot;,
-    &quot;Python.python_modul2_practice.executor&quot;: &quot;Run&quot;,
-    &quot;Python.python_module3_practice.executor&quot;: &quot;Run&quot;,
-    &quot;Python.string.executor&quot;: &quot;Run&quot;,
-    &quot;Python.test_example.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/RBychkov/PycharmProjects/modul 2 python base&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "Python tests.Python tests for test_addition.TestMyFunctions.executor": "Run",
+    "Python tests.Python tests for test_addition.test_addition.executor": "Run",
+    "Python tests.Python tests for test_addition.test_api.executor": "Run",
+    "Python tests.Python tests for test_addition.test_post_request.executor": "Run",
+    "Python tests.Python tests for test_addition.test_sum.executor": "Run",
+    "Python tests.Python tests for test_api.test_api.executor": "Debug",
+    "Python tests.Python tests for test_api.test_post_practice.executor": "Run",
+    "Python tests.Python tests for test_example.test_google.executor": "Run",
+    "Python tests.Python tests in test_addition.py.executor": "Run",
+    "Python.Hello.executor": "Run",
+    "Python.boolean_and_operator.executor": "Run",
+    "Python.python_base.executor": "Run",
+    "Python.python_modul2_practice.executor": "Run",
+    "Python.python_module3_practice.executor": "Run",
+    "Python.string.executor": "Run",
+    "Python.test_example.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "main",
+    "last_opened_file_path": "C:/Users/RBychkov/PycharmProjects/modul 2 python base",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\RBychkov\PycharmProjects\modul 2 python base" />
