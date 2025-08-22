@@ -31,8 +31,8 @@ class AuthAPI(CustomRequester):
         )
 
         login_as_user_response_data = login_as_user_response.json()
-        access_token = login_as_user_response_data['accessToken']
         login_as_user_response_data['password'] = login_data['password']
+        access_token = login_as_user_response_data['accessToken']
         self._update_session_headers(self.session, Authorization=f"Bearer {access_token}")
         return login_as_user_response_data
 
@@ -67,8 +67,8 @@ class AuthAPI(CustomRequester):
         )
 
         login_as_admin_response_data = login_as_admin_response.json()
-        access_token = login_as_admin_response_data['accessToken']
         login_as_admin_response_data['password'] = ADMIN_LOGIN_DATA['password']
+        access_token = login_as_admin_response_data['accessToken']
         self._update_session_headers(self.session, Authorization=f"Bearer {access_token}")
         return login_as_admin_response_data
 

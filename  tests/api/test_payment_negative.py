@@ -23,7 +23,7 @@ class TestPaymentAPINegative:
 
         get_user_payments_response = api_manager.payment_api.get_another_user_payments_as_admin(111111111122222222233333333333, 404)
 
-        assert get_user_payments_response.json()['message'] == 'Пользователь не найден'
+        assert get_user_payments_response.json()['message'] == 'Пользователь не найден', 'Статус в теле ответа не корректный'
 
     def test_try_to_get_another_user_payments_as_user(self, api_manager, fixture_height_order_login_as_user_function,
                                               fixture_payment_data):

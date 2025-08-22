@@ -9,10 +9,10 @@ class TestAuthAPINegative:
         assert register_user_response['message'] == ['Пароль должен содержать хотя бы одну цифру'], "Текст ошибки не корректный."
 
     def test_try_register_user_with_non_unique_email(self, api_manager, fixture_test_user, fixture_register_user):
-        email = fixture_register_user['email']
+        registered_user_email = fixture_register_user['email']
 
         test_user_2 = fixture_test_user()
-        test_user_2['email'] = email
+        test_user_2['email'] = registered_user_email
 
         api_manager.auth_api.register_user(test_user_2, 409)
 

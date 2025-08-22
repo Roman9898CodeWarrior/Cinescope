@@ -14,8 +14,8 @@ class UserAPI(CustomRequester):
             endpoint=f'{USER_ENDPOINT}/{registered_user_id}',
             expected_status=expected_status
         )
-        get_user_response_data = get_user_response.json()
-        return get_user_response_data
+
+        return get_user_response.json()
 
     def create_user_as_admin(self, api_manager, user_data_for_creation_by_admin, expected_status=201):
         api_manager.auth_api.login_as_admin()
@@ -44,10 +44,10 @@ class UserAPI(CustomRequester):
         return change_user_response.json()
 
 
-    def delete_user(self, login_as_user, expected_status=200):
+    def delete_user(self, user_data, expected_status=200):
         delete_user_response = self.send_request(
             method="DELETE",
-            endpoint=f"{USER_ENDPOINT}/{login_as_user['user']['id']}",
+            endpoint=f"{USER_ENDPOINT}/{user_data['user']['id']}",
             expected_status=expected_status
         )
 

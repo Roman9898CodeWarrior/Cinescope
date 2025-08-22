@@ -43,16 +43,18 @@ class TestPaymentAPIPositive:
         assert get_user_payments_response[0]['movieId'] == movie_id, 'id фильма не совпадает.'
         assert get_user_payments_response[0]['userId'] == user_id, 'id пользователя не совпадает'
 
-    def test_get_all_payments_as_admin(self, api_manager, fixture_login_as_user, fixture_create_payment, request):
+    def test_get_all_payments_as_admin(self, api_manager, fixture_login_as_user, fixture_create_payment):
         payment1 = fixture_create_payment()
         payment2 = fixture_create_payment()
         payment3 = fixture_create_payment()
+
         payment1_movie_id = payment1['movieId']
         payment2_movie_id = payment2['movieId']
         payment3_movie_id = payment3['movieId']
+
         user_id = fixture_login_as_user['user']['id']
 
-        request.getfixturevalue('login_as_admin')
+        api_manager.auth_api.login_as_admin()
 
         get_all_payments_by_admin_response = api_manager.payment_api.get_all_payments_by_admin()
 
@@ -72,7 +74,7 @@ class TestPaymentAPIPositive:
             assert payment['status'] == 'INVALID_CARD', 'В отфильтрованном по статусу INVALID_CARD списке платежей по крайней мере у одного платежа статус другой.'
 
     def test_get_all_payments_sorted_by_creation_time_desc_as_admin (self, api_manager, fixture_login_as_user,
-                                                                     fixture_create_payment, request):
+                                                                     fixture_create_payment):
         payment1 = fixture_create_payment()
         payment2 = fixture_create_payment()
 
@@ -80,9 +82,9 @@ class TestPaymentAPIPositive:
         second_payment_movie_id = payment2['movieId']
         user_id = fixture_login_as_user['user']['id']
 
-        request.getfixturevalue('login_as_admin')
+        api_manager.auth_api.login_as_admin()
 
-        get_all_payments_sorted_by_desc_response = api_manager.payment_api.get_all_payments_by_admin({'createdAt': 'desc'})
+        get_all_payments_sorted_by_desc_response = api_manager.payment_api.get_all_payments_by_admin({'pageSize': 1000, 'createdAt': 'desc'})
 
         all_payments_sorted_by_desc_count = len(get_all_payments_sorted_by_desc_response['payments'])
         assert get_all_payments_sorted_by_desc_response['payments'][0]['movieId'] == second_payment_movie_id, 'id фильма не совпадает.'
@@ -100,7 +102,7 @@ class TestPaymentAPIPositive:
 
         assert datetime.strptime(get_all_payments_sorted_by_desc_response['payments'][all_payments_sorted_by_desc_count - 1]['createdAt'], date_format) == oldest_payment_date
 
-        get_all_payments_sorted_by_asc_response = api_manager.payment_api.get_all_payments_by_admin({'createdAt': 'asc'})
+        get_all_payments_sorted_by_asc_response = api_manager.payment_api.get_all_payments_by_admin({'pageSize': 1000, 'createdAt': 'asc'})
 
         assert datetime.strptime(get_all_payments_sorted_by_asc_response['payments'][0]['createdAt'],
                                  date_format) == oldest_payment_date
@@ -108,7 +110,7 @@ class TestPaymentAPIPositive:
     def test_get_all_payments_sorted_by_creation_time_asc_as_admin(self, api_manager):
         api_manager.auth_api.login_as_admin()
 
-        get_all_payments_sorted_by_asc_response = api_manager.payment_api.get_all_payments_by_admin({'createdAt': 'asc'})
+        get_all_payments_sorted_by_asc_response = api_manager.payment_api.get_all_payments_by_admin({'pageSize': 1000, 'createdAt': 'asc'})
 
         oldest_payment_date = datetime.now()
         date_format = "%Y-%m-%dT%H:%M:%S.%fZ"
@@ -117,6 +119,7 @@ class TestPaymentAPIPositive:
             date_of_creation = datetime.strptime(payment['createdAt'], date_format)
             if date_of_creation < oldest_payment_date:
                 oldest_payment_date = date_of_creation
+
         assert datetime.strptime(get_all_payments_sorted_by_asc_response['payments'][0]['createdAt'],
                                  date_format) == oldest_payment_date
 
