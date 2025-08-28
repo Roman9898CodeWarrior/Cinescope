@@ -1,6 +1,6 @@
 .idea/
 .vscode/
-.venv/
+.venv1/
 .DS_Store
 /venv/
 __pycache__/
@@ -28,5 +28,6 @@ ops/.env
 
 .secrets.json
 .token
+.env
 local_test.py
 zzz.py

@@ -28,9 +28,16 @@ class CustomRequester:
             raise ValueError(f"Unexpected status code: {response.status_code}. Expected: {expected_status}")
         return response
 
-    def _update_session_headers(self, session, **kwargs):
+    @staticmethod
+    def get_request_body(response: requests.Response):
+        if response is None or response.request is None:
+            return None
+        request_body_string = response.request.body.decode('utf-8')
+        return json.loads(request_body_string)
+
+    def _update_session_headers(self, **kwargs):
         self.headers.update(kwargs)
-        session.headers.update(self.headers)
+        self.session.headers.update(self.headers)
 
     def log_request_and_response(self, response):
         try:

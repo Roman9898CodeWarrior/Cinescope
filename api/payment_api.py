@@ -1,9 +1,10 @@
-from constants import AUTH_URL, PAYMENT_URL, CREATE_PAYMENT_ENDPOINT, USER_ENDPOINT, FIND_ALL_PAYMENTS_ENDPOINT
+from constants.constants import PAYMENT_URL, CREATE_PAYMENT_ENDPOINT, USER_ENDPOINT, FIND_ALL_PAYMENTS_ENDPOINT
 from custom_requester.custom_requester import CustomRequester
 
 class PaymentAPI(CustomRequester):
     def __init__(self, session):
-        super().__init__(session=session, base_url=PAYMENT_URL)
+        self.session = session
+        super().__init__(session, PAYMENT_URL)
 
     def create_payment(self, payment_data,  expected_status=201):
         create_payment_response = self.send_request(

@@ -1,9 +1,43 @@
-from constants import REGISTER_ENDPOINT, LOGIN_ENDPOINT, LOGOUT_ENDPOINT, REFRESH_TOKENS_ENDPOINT, AUTH_URL, ADMIN_LOGIN_DATA
+from constants.constants import REGISTER_ENDPOINT, LOGIN_ENDPOINT, LOGOUT_ENDPOINT, REFRESH_TOKENS_ENDPOINT, AUTH_URL, ADMIN_LOGIN_DATA
 from custom_requester.custom_requester import CustomRequester
+from models.login_user_response import LogInResponse
+
 
 class AuthAPI(CustomRequester):
     def __init__(self, session):
-        super().__init__(session=session, base_url=AUTH_URL)
+        self.session = session
+        super().__init__(session, AUTH_URL)
+
+    def authenticate(self, user_creds):
+        login_data = {
+            "email": user_creds['email'],
+            "password": user_creds['password']
+        }
+
+        response = self.login_user(login_data)
+
+        #response = vars(LogInResponse(**self.login_user(login_data).json()))
+
+        '''
+        if "accessToken" not in response:
+            raise KeyError("token is missing")
+        '''
+
+        token = response["accessToken"]
+        self._update_session_headers(Authorization=f"Bearer {token}")
+
+        return response
+
+    def login_user(self, login_data, expected_status=200):
+        response = self.send_request(
+            method="POST",
+            endpoint=LOGIN_ENDPOINT,
+            data=login_data,
+            expected_status=expected_status
+        )
+
+        return response.json()
+
 
     def register_user(self, test_user_data, expected_status=201):
         response = self.send_request(
@@ -13,9 +47,9 @@ class AuthAPI(CustomRequester):
             expected_status=expected_status
         )
 
-        register_user_response_data = response.json()
-        register_user_response_data['password'] = test_user_data['password']
-        return register_user_response_data
+        # register_user_response_data = response.json()
+        #register_user_response_data['password'] = test_user_data['password']
+        return response.json()
 
     def login_as_user(self, register_user, expected_status=200):
         login_data = {
@@ -33,7 +67,7 @@ class AuthAPI(CustomRequester):
         login_as_user_response_data = login_as_user_response.json()
         login_as_user_response_data['password'] = login_data['password']
         access_token = login_as_user_response_data['accessToken']
-        self._update_session_headers(self.session, Authorization=f"Bearer {access_token}")
+        self._update_session_headers(Authorization=f"Bearer {access_token}")
         return login_as_user_response_data
 
     def height_order_login_as_user_function(self, register_user, expected_status=200):
@@ -53,7 +87,7 @@ class AuthAPI(CustomRequester):
             login_as_user_response_data = login_as_user_response.json()
             access_token = login_as_user_response_data['accessToken']
             login_as_user_response_data['password'] = login_data['password']
-            self._update_session_headers(self.session, Authorization=f"Bearer {access_token}")
+            self._update_session_headers(Authorization=f"Bearer {access_token}")
             return login_as_user_response_data
 
         return _login_as_user
@@ -69,7 +103,7 @@ class AuthAPI(CustomRequester):
         login_as_admin_response_data = login_as_admin_response.json()
         login_as_admin_response_data['password'] = ADMIN_LOGIN_DATA['password']
         access_token = login_as_admin_response_data['accessToken']
-        self._update_session_headers(self.session, Authorization=f"Bearer {access_token}")
+        self._update_session_headers(Authorization=f"Bearer {access_token}")
         return login_as_admin_response_data
 
     def logout_as_user(self, expected_status=200):
