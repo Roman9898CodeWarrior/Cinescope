@@ -2,6 +2,7 @@ from datetime import date
 
 import pytest
 
+from constants.roles import Roles
 from utils.request_utils import RequestUtils
 
 
@@ -34,7 +35,7 @@ class TestAuthAPIPositive:
     @pytest.mark.smoke
     def test_login_as_user(self, api_manager, fixture_register_user_response):
         registered_user_creds_data = RequestUtils.get_request_body(fixture_register_user_response)
-        login_as_user_response = api_manager.auth_api.login_as_user(registered_user_creds_data)
+        login_as_user_response = api_manager.auth_api.authenticate(registered_user_creds_data)
 
         register_user_response_data = fixture_register_user_response.json()
 
@@ -175,7 +176,7 @@ class TestAuthAPIPositive:
             'createdAt'], 'Дата регистрации пользователя отсутствует.'
 
     def test_get_all_users_filtered_by_role(self, super_admin):
-        role = 'ADMIN'
+        role = Roles.ADMIN.value
 
         get_all_users_filtered_by_role_response = super_admin.api.user_api.get_all_users_filtered_by_role(role)
 

@@ -1,5 +1,7 @@
 from constants.constants import USER_ENDPOINT, AUTH_URL
 from custom_requester.custom_requester import CustomRequester
+from models.getAllUsersResponse import AllUsers
+
 
 class UserAPI(CustomRequester):
     def __init__(self, session):
@@ -68,4 +70,4 @@ class UserAPI(CustomRequester):
             expected_status=expected_status
         )
 
-        return get_all_users_filtered_by_role_response.json()
+        return vars(AllUsers(**get_all_users_filtered_by_role_response.json()))

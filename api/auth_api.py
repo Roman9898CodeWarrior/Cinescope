@@ -1,6 +1,7 @@
 from constants.constants import REGISTER_ENDPOINT, LOGIN_ENDPOINT, LOGOUT_ENDPOINT, REFRESH_TOKENS_ENDPOINT, AUTH_URL, ADMIN_LOGIN_DATA
 from custom_requester.custom_requester import CustomRequester
 from models.login_user_response import LogInResponse
+from models.user_data import UserDataForLoggingIn
 
 
 class AuthAPI(CustomRequester):
@@ -8,26 +9,55 @@ class AuthAPI(CustomRequester):
         self.session = session
         super().__init__(session, AUTH_URL)
 
-    def authenticate(self, user_creds):
-        login_data = {
-            "email": user_creds['email'],
-            "password": user_creds['password']
-        }
+    def authenticate(self, registered_user_data, expected_status=200):
+        login_data = vars(
+            UserDataForLoggingIn(
+                email=registered_user_data['email'],
+                password=registered_user_data['password']
+            )
+        )
 
-        response = self.login_user(login_data)
+        login_as_user_response = self.send_request(
+            method="POST",
+            endpoint=LOGIN_ENDPOINT,
+            data=login_data,
+            expected_status=expected_status
+        )
 
-        #response = vars(LogInResponse(**self.login_user(login_data).json()))
+        if expected_status != 200 and login_as_user_response.status_code != 200:
+            return login_as_user_response
+        else:
+            login_as_user_response_data = login_as_user_response.json()
+            #login_as_user_response_data['password'] = login_data['password']
+            access_token = login_as_user_response_data['accessToken']
+            self._update_session_headers(Authorization=f"Bearer {access_token}")
+            return login_as_user_response_data
+    '''
+    def log_in(self, registered_user_data, expected_status=200):
+        login_data = vars(
+            UserDataForLoggingIn(
+                email=registered_user_data['email'],
+                password=registered_user_data['password']
+            )
+        )
 
-        '''
-        if "accessToken" not in response:
-            raise KeyError("token is missing")
-        '''
+        login_as_user_response = self.send_request(
+            method="POST",
+            endpoint=LOGIN_ENDPOINT,
+            data=login_data,
+            expected_status=expected_status
+        )
 
-        token = response["accessToken"]
-        self._update_session_headers(Authorization=f"Bearer {token}")
-
-        return response
-
+        if expected_status != 200 and login_as_user_response.status_code != 200:
+            return login_as_user_response
+        else:
+            login_as_user_response_data = login_as_user_response.json()
+            #login_as_user_response_data['password'] = login_data['password']
+            access_token = login_as_user_response_data['accessToken']
+            self._update_session_headers(Authorization=f"Bearer {access_token}")
+            return login_as_user_response_data
+    '''
+    '''
     def login_user(self, login_data, expected_status=200):
         response = self.send_request(
             method="POST",
@@ -37,7 +67,7 @@ class AuthAPI(CustomRequester):
         )
 
         return response.json()
-
+    '''
 
     def register_user(self, test_user_data, expected_status=201):
         response = self.send_request(
@@ -51,24 +81,6 @@ class AuthAPI(CustomRequester):
         #register_user_response_data['password'] = test_user_data['password']
         return response.json()
 
-    def login_as_user(self, register_user, expected_status=200):
-        login_data = {
-            "email": register_user['email'],
-            "password": register_user['password']
-        }
-
-        login_as_user_response = self.send_request(
-            method="POST",
-            endpoint=LOGIN_ENDPOINT,
-            data=login_data,
-            expected_status=expected_status
-        )
-
-        login_as_user_response_data = login_as_user_response.json()
-        login_as_user_response_data['password'] = login_data['password']
-        access_token = login_as_user_response_data['accessToken']
-        self._update_session_headers(Authorization=f"Bearer {access_token}")
-        return login_as_user_response_data
 
     def height_order_login_as_user_function(self, register_user, expected_status=200):
         def _login_as_user():

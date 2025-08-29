@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field, field_validator
 from constants.roles import Roles
 
 
-class RegisterOrCreateUserResponse(BaseModel):
+class RegisterCreateGetOrDeleteUserResponse(BaseModel):
     id: str
     email: str = Field(pattern=r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
     fullName: str

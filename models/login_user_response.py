@@ -1,10 +1,8 @@
-from datetime import datetime
 from typing import List
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field
 
 from constants.roles import Roles
-
 
 class User(BaseModel):
     id: str

@@ -9,8 +9,9 @@ from constants.roles import Roles
 from entities.user import CommonUser
 from entities.user import AdminUser
 from models.login_user_response import LogInResponse
-from models.register_user_response import RegisterOrCreateUserResponse
-from models.user_data import UserDataForRegistration, UserDataForCreationByAdmin
+from models.payment_data import DataForPaymentCreation
+from models.get_user_info_response import RegisterCreateGetOrDeleteUserResponse
+from models.user_data import UserDataForRegistration, UserDataForCreationByAdmin, UserDataForLoggingIn
 from resources.user_creds import SuperAdminCreds
 from utils.data_generator import DataGenerator
 from faker import Faker
@@ -75,7 +76,7 @@ def common_user_registered(user_session, api_manager, fixture_user_for_registrat
     new_session = user_session()
     user_data_for_creation = fixture_user_for_registration()
 
-    register_common_user_response = RegisterOrCreateUserResponse(**api_manager.auth_api.register_user(user_data_for_creation))
+    register_common_user_response = RegisterCreateGetOrDeleteUserResponse(**api_manager.auth_api.register_user(user_data_for_creation))
 
     common_user = CommonUser(
         user_data_for_creation['email'],
@@ -101,7 +102,7 @@ def common_user_created(user_session, super_admin, fixture_user_for_creation):
     new_session = user_session()
     user_data_for_creation = fixture_user_for_creation()
 
-    created_common_user_response =  RegisterOrCreateUserResponse(**super_admin.api.user_api.create_user_as_admin(user_data_for_creation))
+    created_common_user_response =  RegisterCreateGetOrDeleteUserResponse(**super_admin.api.user_api.create_user_as_admin(user_data_for_creation))
 
     common_user = CommonUser(
         user_data_for_creation['email'],
@@ -231,10 +232,12 @@ def fixture_register_user_data(api_manager, fixture_user_for_registration):
 @pytest.fixture
 def fixture_login_as_user(api_manager, fixture_register_user_response):
     registered_user_creds_data = RequestUtils.get_request_body(fixture_register_user_response)
-    login_data = {
-        "email":  registered_user_creds_data['email'],
-        "password":  registered_user_creds_data['password']
-    }
+    login_data = vars(
+        UserDataForLoggingIn(
+            email=registered_user_creds_data['email'],
+            password=registered_user_creds_data['password']
+        )
+    )
 
     login_as_user_response = api_manager.auth_api.send_request(
         method="POST",
@@ -252,10 +255,12 @@ def fixture_login_as_user(api_manager, fixture_register_user_response):
 def fixture_height_order_login_as_user_function(api_manager, fixture_register_user_response):
     def _login_as_user():
         registered_user_creds_data = RequestUtils.get_request_body(fixture_register_user_response)
-        login_data = {
-            "email": registered_user_creds_data['email'],
-            "password": registered_user_creds_data['password']
-        }
+        login_data = vars(
+            UserDataForLoggingIn(
+                email=registered_user_creds_data['email'],
+                password=registered_user_creds_data['password']
+            )
+        )
 
         login_as_user_response = api_manager.auth_api.send_request(
             method="POST",
@@ -319,9 +324,9 @@ def auth_session(test_user):
         new_user_data = test_user()
 
         register_url = f"{AUTH_URL}{REGISTER_ENDPOINT}"
-        register_user_response.py = requests.post(register_url, json=new_user_data, headers=HEADERS, verify=False)
-        assert  register_user_response.py.status_code == 201, "Ошибка регистрации пользователя"
-        user_id =  register_user_response.py.json()['id']
+        get_user_info_response.py = requests.post(register_url, json=new_user_data, headers=HEADERS, verify=False)
+        assert  get_user_info_response.py.status_code == 201, "Ошибка регистрации пользователя"
+        user_id =  get_user_info_response.py.json()['id']
 
         login_url = f"{AUTH_URL}{LOGIN_ENDPOINT}"
         login_data = {
@@ -366,6 +371,19 @@ def admin_auth(auth_requester):
     session.headers.update({"Authorization": f"Bearer {token}"})
     return session
 '''
+
+@pytest.fixture
+def fixture_payment(fixture_payment_data):
+    def _fixture_payment():
+        try:
+            payment = DataForPaymentCreation(**fixture_payment_data())
+        except ValidationError as e:
+            print(e)
+            logger.info(f'Ошибка валидации: {e}')
+        else:
+            return vars(payment)
+
+    return _fixture_payment
 
 @pytest.fixture
 def fixture_payment_data():
@@ -413,14 +431,13 @@ def fixture_non_valid_payment_data():
 
     return _non_valid_payment_data
 
-
 @pytest.fixture
-def fixture_create_payment(api_manager, fixture_payment_data, fixture_login_as_user):
+def fixture_create_payment(api_manager, fixture_payment, fixture_login_as_user):
     def _create_payment():
         create_payment_response = api_manager.payment_api.send_request(
             method="POST",
             endpoint=CREATE_PAYMENT_ENDPOINT,
-            data=fixture_payment_data(),
+            data=fixture_payment(),
             expected_status=201
         )
 

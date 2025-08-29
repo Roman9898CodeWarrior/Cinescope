@@ -1,17 +1,20 @@
 from datetime import datetime
 
+from models.get_user_payments_response import UserPaymentsResponse
+
+
 class TestPaymentAPIPositive:
-    def test_create_payment(self, fixture_payment_data, common_user_registered):
-        create_payment_response = common_user_registered.api.payment_api.create_payment(fixture_payment_data())
+    def test_create_payment(self, fixture_payment, common_user_registered):
+        create_payment_response = common_user_registered.api.payment_api.create_payment(fixture_payment())
         assert create_payment_response['status'] == 'SUCCESS', 'Статус в теле ответа не корректный.'
 
-    def test_get_user_payments(self, fixture_payment_data, common_user_registered):
-        payment_data = fixture_payment_data()
+    def test_get_user_payments(self, fixture_payment, common_user_registered):
+        payment_data = fixture_payment()
         common_user_registered.api.payment_api.create_payment(payment_data)
         movie_id = payment_data['movieId']
         user_id = common_user_registered.id
 
-        get_user_payments_response = common_user_registered.api.payment_api.get_user_payments()
+        get_user_payments_response = vars(UserPaymentsResponse(**common_user_registered.api.payment_api.get_user_payments()))
 
         assert get_user_payments_response[0]['movieId'] == movie_id, 'id фильма не совпадает.'
         assert get_user_payments_response[0]['userId'] == user_id, 'id пользователя не совпадает'
@@ -32,8 +35,8 @@ class TestPaymentAPIPositive:
         assert get_user_payments_response_data[0]['userId'] == user_id, 'id пользователя не совпадает'
     '''
 
-    def test_get_another_user_payments_as_admin(self, super_admin, common_user_registered, fixture_payment_data):
-        payment_data = fixture_payment_data()
+    def test_get_another_user_payments_as_admin(self, super_admin, common_user_registered, fixture_payment):
+        payment_data = fixture_payment()
         common_user_registered.api.payment_api.create_payment(payment_data)
         movie_id = payment_data['movieId']
         user_id = common_user_registered.id
@@ -43,10 +46,10 @@ class TestPaymentAPIPositive:
         assert get_user_payments_response[0]['movieId'] == movie_id, 'id фильма не совпадает.'
         assert get_user_payments_response[0]['userId'] == user_id, 'id пользователя не совпадает'
 
-    def test_get_all_payments_as_admin(self, common_user_registered, super_admin, fixture_payment_data):
-        payment_data_1 = fixture_payment_data()
-        payment_data_2 = fixture_payment_data()
-        payment_data_3 = fixture_payment_data()
+    def test_get_all_payments_as_admin(self, common_user_registered, super_admin, fixture_payment):
+        payment_data_1 = fixture_payment()
+        payment_data_2 = fixture_payment()
+        payment_data_3 = fixture_payment()
 
         payment1_movie_id = payment_data_1['movieId']
         payment2_movie_id = payment_data_2['movieId']
@@ -73,9 +76,9 @@ class TestPaymentAPIPositive:
             assert payment['status'] == 'INVALID_CARD', 'В отфильтрованном по статусу INVALID_CARD списке платежей по крайней мере у одного платежа статус другой.'
 
     def test_get_all_payments_sorted_by_creation_time_desc_as_admin (self, common_user_registered,
-                                                                     fixture_payment_data, super_admin):
-        payment_data_1 = fixture_payment_data()
-        payment_data_2 = fixture_payment_data()
+                                                                     fixture_payment, super_admin):
+        payment_data_1 = fixture_payment()
+        payment_data_2 = fixture_payment()
 
         first_payment_movie_id = payment_data_1['movieId']
         second_payment_movie_id = payment_data_2['movieId']

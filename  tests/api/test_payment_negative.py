@@ -6,8 +6,8 @@ class TestPaymentAPINegative:
         ('securityCode', 3211)
     ])
     def test_try_to_create_payment_with_non_valid_card_data(self, common_user_registered,
-                                                            fixture_payment_data, card_param, param_non_valid_value):
-        valid_payment_data = fixture_payment_data()
+                                                            fixture_payment, card_param, param_non_valid_value):
+        valid_payment_data = fixture_payment()
         valid_payment_data['card'][card_param] = param_non_valid_value
         non_valid_payment_data = valid_payment_data
         create_payment_response= common_user_registered.api.payment_api.create_payment(non_valid_payment_data, 400)
@@ -17,8 +17,8 @@ class TestPaymentAPINegative:
         elif card_param == 'securityCode':
             assert 'card.Поле card.securityCode должно быть меньше 1000' in create_payment_response['message'], 'Сообщение об ошибке не корректное.'
 
-    def test_try_to_create_payment_without_authorisation(self, api_manager, fixture_payment_data):
-        api_manager.payment_api.create_payment(fixture_payment_data(), 401)
+    def test_try_to_create_payment_without_authorisation(self, api_manager, fixture_payment):
+        api_manager.payment_api.create_payment(fixture_payment(), 401)
 
     def test_try_to_get_all_users_payments_as_user(self, common_user_created):
         common_user_created.api.payment_api.get_all_payments_by_admin(expected_status=403)
@@ -29,11 +29,11 @@ class TestPaymentAPINegative:
         assert get_user_payments_response['message'] == 'Пользователь не найден', 'Статус в теле ответа не корректный'
 
     def test_try_to_get_another_user_payments_as_user(self, api_manager, fixture_height_order_login_as_user_function,
-                                              fixture_payment_data):
+                                                      fixture_payment):
         first_user_session = fixture_height_order_login_as_user_function()
         first_user_id = first_user_session['user']['id']
 
-        api_manager.payment_api.create_payment(fixture_payment_data())
+        api_manager.payment_api.create_payment(fixture_payment())
 
         fixture_height_order_login_as_user_function()
 

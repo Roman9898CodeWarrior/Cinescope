@@ -1,4 +1,6 @@
 from constants.constants import LOGIN_ENDPOINT
+from models.user_data import UserDataForLoggingIn
+from utils.request_utils import RequestUtils
 
 
 class TestAuthAPINegative:
@@ -16,17 +18,13 @@ class TestAuthAPINegative:
 
         api_manager.auth_api.register_user(test_user_2, 409)
 
-    def test_try_to_login_as_user_with_wrong_email(self, api_manager, fixture_register_user_data):
-        fixture_register_user_data['password'] += '!'
+    def test_try_to_login_as_user_with_wrong_email(self, api_manager, fixture_register_user_response):
+        registered_user_creds_data = RequestUtils.get_request_body(fixture_register_user_response)
+        registered_user_creds_data['password'] += '!'
 
-        try_to_login_response = api_manager.auth_api.send_request(
-            method="POST",
-            endpoint=LOGIN_ENDPOINT,
-            data=fixture_register_user_data,
-            expected_status=401
-        )
+        try_to_authenticate_response = api_manager.auth_api.authenticate(registered_user_creds_data, 401)
 
-        assert try_to_login_response.json()['message'] == 'Неверный логин или пароль', "Текст ошибки не корректный."
+        assert try_to_authenticate_response.json()['message'] == 'Неверный логин или пароль', "Текст ошибки не корректный."
 
     def test_try_to_create_user_with_non_unique_email_as_admin(self, super_admin,
                                                                fixture_user_data_for_creation_by_admin):
