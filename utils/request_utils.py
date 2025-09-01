@@ -1,7 +1,7 @@
 import json
 import requests
 
-class RequestUtils():
+class RequestUtils:
     @staticmethod
     def get_request_body(response: requests.Response):
         if response is None or response.request is None:

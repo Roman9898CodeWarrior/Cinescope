@@ -33,7 +33,5 @@ class DataForPaymentCreation(BaseModel):
 
     @field_validator("card")
     def from_object_to_dict(cls, value: CardClass) -> dict[str, Any] | None:
-        if isinstance(value, CardClass):
             return vars(value)
-        return None
 

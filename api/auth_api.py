@@ -1,7 +1,14 @@
+from venv import logger
+
+import pytest
+from pydantic import ValidationError
+
 from constants.constants import REGISTER_ENDPOINT, LOGIN_ENDPOINT, LOGOUT_ENDPOINT, REFRESH_TOKENS_ENDPOINT, AUTH_URL, ADMIN_LOGIN_DATA
 from custom_requester.custom_requester import CustomRequester
-from models.login_user_response import LogInResponse
-from models.user_data import UserDataForLoggingIn
+from models.get_user_info_response_model import RegisterCreateGetOrDeleteUserResponse
+from models.login_user_response_model import LogInResponse
+from models.refresh_tokens_response_model import RefreshTokensResponse
+from models.user_data_model import UserDataForLoggingIn, UserDataForRegistration
 
 
 class AuthAPI(CustomRequester):
@@ -10,12 +17,18 @@ class AuthAPI(CustomRequester):
         super().__init__(session, AUTH_URL)
 
     def authenticate(self, registered_user_data, expected_status=200):
-        login_data = vars(
-            UserDataForLoggingIn(
-                email=registered_user_data['email'],
-                password=registered_user_data['password']
+        login_data = {}
+
+        try:
+            login_data = vars(
+                UserDataForLoggingIn(
+                    email=registered_user_data['email'],
+                    password=registered_user_data['password']
+                )
             )
-        )
+        except ValidationError as e:
+            pytest.fail(f'Ошибка валидации: {e}')
+            logger.info(f'Ошибка валидации: {e}')
 
         login_as_user_response = self.send_request(
             method="POST",
@@ -27,67 +40,29 @@ class AuthAPI(CustomRequester):
         if expected_status != 200 and login_as_user_response.status_code != 200:
             return login_as_user_response
         else:
-            login_as_user_response_data = login_as_user_response.json()
-            #login_as_user_response_data['password'] = login_data['password']
-            access_token = login_as_user_response_data['accessToken']
-            self._update_session_headers(Authorization=f"Bearer {access_token}")
-            return login_as_user_response_data
-    '''
-    def log_in(self, registered_user_data, expected_status=200):
-        login_data = vars(
-            UserDataForLoggingIn(
-                email=registered_user_data['email'],
-                password=registered_user_data['password']
-            )
-        )
+            try:
+                login_as_user_response_validated = vars(LogInResponse(**login_as_user_response.json()))
+                access_token = login_as_user_response_validated['accessToken']
+                self._update_session_headers(Authorization=f"Bearer {access_token}")
+                return login_as_user_response_validated
+            except ValidationError as e:
+                pytest.fail(f'Ошибка валидации: {e}')
+                logger.info(f'Ошибка валидации: {e}')
 
-        login_as_user_response = self.send_request(
-            method="POST",
-            endpoint=LOGIN_ENDPOINT,
-            data=login_data,
-            expected_status=expected_status
-        )
+    def height_order_authenticate_function(self, registered_user_data, expected_status=200):
+        def _height_order_authenticate_function():
+            login_data = {}
 
-        if expected_status != 200 and login_as_user_response.status_code != 200:
-            return login_as_user_response
-        else:
-            login_as_user_response_data = login_as_user_response.json()
-            #login_as_user_response_data['password'] = login_data['password']
-            access_token = login_as_user_response_data['accessToken']
-            self._update_session_headers(Authorization=f"Bearer {access_token}")
-            return login_as_user_response_data
-    '''
-    '''
-    def login_user(self, login_data, expected_status=200):
-        response = self.send_request(
-            method="POST",
-            endpoint=LOGIN_ENDPOINT,
-            data=login_data,
-            expected_status=expected_status
-        )
-
-        return response.json()
-    '''
-
-    def register_user(self, test_user_data, expected_status=201):
-        response = self.send_request(
-            method="POST",
-            endpoint=REGISTER_ENDPOINT,
-            data=test_user_data,
-            expected_status=expected_status
-        )
-
-        # register_user_response_data = response.json()
-        #register_user_response_data['password'] = test_user_data['password']
-        return response.json()
-
-
-    def height_order_login_as_user_function(self, register_user, expected_status=200):
-        def _login_as_user():
-            login_data = {
-                "email": register_user['email'],
-                "password": register_user['password']
-            }
+            try:
+                login_data = vars(
+                    UserDataForLoggingIn(
+                        email=registered_user_data['email'],
+                        password=registered_user_data['password']
+                    )
+                )
+            except ValidationError as e:
+                pytest.fail(f'Ошибка валидации: {e}')
+                logger.info(f'Ошибка валидации: {e}')
 
             login_as_user_response = self.send_request(
                 method="POST",
@@ -96,29 +71,49 @@ class AuthAPI(CustomRequester):
                 expected_status=expected_status
             )
 
-            login_as_user_response_data = login_as_user_response.json()
-            access_token = login_as_user_response_data['accessToken']
-            login_as_user_response_data['password'] = login_data['password']
-            self._update_session_headers(Authorization=f"Bearer {access_token}")
-            return login_as_user_response_data
+            if expected_status != 200 and login_as_user_response.status_code != 200:
+                return login_as_user_response
+            else:
+                try:
+                    login_as_user_response_validated = vars(LogInResponse(**login_as_user_response.json()))
+                    access_token = login_as_user_response_validated['accessToken']
+                    self._update_session_headers(Authorization=f"Bearer {access_token}")
+                    return login_as_user_response_validated
+                except ValidationError as e:
+                    pytest.fail(f'Ошибка валидации: {e}')
+                    logger.info(f'Ошибка валидации: {e}')
 
-        return _login_as_user
+        return _height_order_authenticate_function
 
-    def login_as_admin(self, expected_status=200):
-        login_as_admin_response = self.send_request(
+    def register_user(self, test_user_data, expected_status=201):
+        test_user_data_validated = {}
+
+        try:
+            test_user_data_validated = vars(UserDataForRegistration(**test_user_data))
+        except ValidationError as e:
+            pytest.fail(f'Ошибка валидации: {e}')
+            logger.info(f'Ошибка валидации: {e}')
+
+        response = self.send_request(
             method="POST",
-            endpoint=LOGIN_ENDPOINT,
-            data=ADMIN_LOGIN_DATA,
+            endpoint=REGISTER_ENDPOINT,
+            data=test_user_data_validated,
             expected_status=expected_status
         )
 
-        login_as_admin_response_data = login_as_admin_response.json()
-        login_as_admin_response_data['password'] = ADMIN_LOGIN_DATA['password']
-        access_token = login_as_admin_response_data['accessToken']
-        self._update_session_headers(Authorization=f"Bearer {access_token}")
-        return login_as_admin_response_data
+        if expected_status != 200 and response.status_code != 200:
+            return response.json()
+        else:
+            try:
+                response_validated = vars(RegisterCreateGetOrDeleteUserResponse(**response.json()))
+                return response_validated
+            except ValidationError as e:
+                pytest.fail(f'Ошибка валидации: {e}')
+                logger.info(f'Ошибка валидации: {e}')
 
-    def logout_as_user(self, expected_status=200):
+
+
+    def logout(self, expected_status=200):
         self.send_request(
             method="GET",
             endpoint=LOGOUT_ENDPOINT,
@@ -132,5 +127,11 @@ class AuthAPI(CustomRequester):
             expected_status=expected_status
         )
 
-        return refresh_tokens_response.json()
+        try:
+            refresh_tokens_response_validated = vars(RefreshTokensResponse(**refresh_tokens_response.json()))
+            return refresh_tokens_response_validated
+        except ValidationError as e:
+            pytest.fail(f'Ошибка валидации: {e}')
+            logger.info(f'Ошибка валидации: {e}')
+
 

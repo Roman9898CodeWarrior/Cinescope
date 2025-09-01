@@ -7,8 +7,8 @@ class UserDataForRegistration(BaseModel):
     fullName: str
     password: str = Field(min_length=8, max_length=32)
     passwordRepeat: str
-    roles: list[str] = [Roles.USER.value]
-    #roles: list[Roles] = [Roles.USER]
+    #roles: list[str] = [Roles.USER.value]
+    roles: list[Roles] = [Roles.USER]
 
     @field_validator("email")
     def check_email(cls, value: str) -> str:
@@ -22,9 +22,17 @@ class UserDataForRegistration(BaseModel):
             raise ValueError("Пароли не совпадают")
         return value
 
+    @field_validator("roles")
+    def from_enum_to_str(cls, value: list[Roles]) -> list[str]:
+        new_list = []
+        for role in value:
+            new_list.append(role.value)
+        value = new_list
+        return value
+
     class Config:
         json_encoders = {
-            Roles: lambda v: v.value  # Преобразуем Enum в строку
+            Roles: lambda v: v.value
         }
 
 class UserDataForCreationByAdmin(BaseModel):

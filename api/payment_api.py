@@ -1,5 +1,13 @@
+from venv import logger
+
+import pytest
+from pydantic import ValidationError
+
 from constants.constants import PAYMENT_URL, CREATE_PAYMENT_ENDPOINT, USER_ENDPOINT, FIND_ALL_PAYMENTS_ENDPOINT
 from custom_requester.custom_requester import CustomRequester
+from models.get_user_payments_response_model import UserPaymentsResponse
+from models.payment_data_model import DataForPaymentCreation
+
 
 class PaymentAPI(CustomRequester):
     def __init__(self, session):
@@ -7,10 +15,18 @@ class PaymentAPI(CustomRequester):
         super().__init__(session, PAYMENT_URL)
 
     def create_payment(self, payment_data,  expected_status=201):
+        payment_data_validated = {}
+
+        try:
+            payment_data_validated = vars(DataForPaymentCreation(**payment_data))
+        except ValidationError as e:
+            pytest.fail(f'Ошибка валидации: {e}')
+            logger.info(f'Ошибка валидации: {e}')
+
         create_payment_response = self.send_request(
             method="POST",
             endpoint=CREATE_PAYMENT_ENDPOINT,
-            data=payment_data,
+            data=payment_data_validated,
             expected_status=expected_status
         )
 
@@ -22,7 +38,13 @@ class PaymentAPI(CustomRequester):
             endpoint=USER_ENDPOINT,
             expected_status=expected_status
         )
-        return get_user_payments_response.json()
+
+        try:
+            get_user_payments_response_validated = vars(UserPaymentsResponse.model_validate(get_user_payments_response.json()))
+            return get_user_payments_response_validated
+        except ValidationError as e:
+            pytest.fail(f'Ошибка валидации: {e}')
+            logger.info(f'Ошибка валидации: {e}')
 
     def get_another_user_payments_as_admin(self, user_id, expected_status=200):
         get_another_user_payments_as_admin_response = self.send_request(
@@ -31,7 +53,13 @@ class PaymentAPI(CustomRequester):
             expected_status=expected_status
         )
 
-        return get_another_user_payments_as_admin_response.json()
+        try:
+            get_another_user_payments_as_admin_response = vars(
+                UserPaymentsResponse.model_validate(get_another_user_payments_as_admin_response.json()))
+            return get_another_user_payments_as_admin_response
+        except ValidationError as e:
+            pytest.fail(f'Ошибка валидации: {e}')
+            logger.info(f'Ошибка валидации: {e}')
 
     def get_all_payments_by_admin(self, params=None, expected_status=200):
         get_all_payments_by_admin_response = self.send_request(

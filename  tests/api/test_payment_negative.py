@@ -28,22 +28,19 @@ class TestPaymentAPINegative:
 
         assert get_user_payments_response['message'] == 'Пользователь не найден', 'Статус в теле ответа не корректный'
 
-    def test_try_to_get_another_user_payments_as_user(self, api_manager, fixture_height_order_login_as_user_function,
+    def test_try_to_get_another_user_payments_as_user(self, common_user_registered, common_user_created,
                                                       fixture_payment):
-        first_user_session = fixture_height_order_login_as_user_function()
-        first_user_id = first_user_session['user']['id']
+        first_user_id = common_user_registered.id
 
-        api_manager.payment_api.create_payment(fixture_payment())
+        common_user_registered.api.payment_api.create_payment(fixture_payment())
 
-        fixture_height_order_login_as_user_function()
-
-        get_first_user_payments_response = api_manager.payment_api.get_another_user_payments_as_admin(first_user_id, 403)
-        response_message = get_first_user_payments_response['message']
+        get_registered_user_payments_response = common_user_created.api.payment_api.get_another_user_payments_as_admin(first_user_id, 403)
+        response_message = get_registered_user_payments_response['message']
 
         assert response_message == 'Forbidden resource', f'Ожидался статус "Forbidden resource", а пришел {response_message}.'
 
     def test_try_to_get_all_payments_filtered_by_wrong_payment_status_as_admin(self, super_admin):
-        get_all_payments_by_admin_response = super_admin.api.payment_api.get_all_payments_by_admin({'status': 'INVALID_CARDS'}, 400)
-        response_message = get_all_payments_by_admin_response['message'][0]
+        get_all_payments_as_admin_response = super_admin.api.payment_api.get_all_payments_by_admin({'status': 'INVALID_CARDS'}, 400)
+        response_message = get_all_payments_as_admin_response['message'][0]
 
         assert response_message == 'Поле status имеет недопустимое значение', f'Ожидался статус , а пришел {response_message}.'

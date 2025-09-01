@@ -2,14 +2,16 @@ from datetime import date
 
 import pytest
 
+from constants.constants import USER_ENDPOINT
 from constants.roles import Roles
+from data.user_data import UserData
 from utils.request_utils import RequestUtils
 
 
 class TestAuthAPIPositive:
     @pytest.mark.smoke
-    def test_register_user(self, api_manager, fixture_user_for_registration, super_admin):
-        test_user_data = fixture_user_for_registration()
+    def test_register_user(self, api_manager, fixture_user_data_for_registration_validated, super_admin):
+        test_user_data = fixture_user_data_for_registration_validated()
 
         register_user_response = api_manager.auth_api.register_user(test_user_data)
 
@@ -32,8 +34,11 @@ class TestAuthAPIPositive:
         assert date.today().strftime('%Y-%m-%d') in get_user_response[
             'createdAt'], 'Дата регистрации пользователя не корректна.'
 
+        super_admin.api.user_api.delete_user(register_user_response['id'])
+
+
     @pytest.mark.smoke
-    def test_login_as_user(self, api_manager, fixture_register_user_response):
+    def test_login_as_user(self, api_manager, fixture_register_user_response, super_admin):
         registered_user_creds_data = RequestUtils.get_request_body(fixture_register_user_response)
         login_as_user_response = api_manager.auth_api.authenticate(registered_user_creds_data)
 
@@ -45,6 +50,9 @@ class TestAuthAPIPositive:
         assert 'refreshToken' in login_as_user_response, 'В ответе отсутствует токен обновления.'
         assert api_manager.session.headers['Authorization'] == f"Bearer {login_as_user_response['accessToken']}"
         assert api_manager.session.cookies['refresh_token'] == login_as_user_response['refreshToken']
+
+        super_admin.api.user_api.delete_user(register_user_response_data['id'])
+
     '''
     def test_logout_as_user(self, api_manager, fixture_login_as_user):
         # ssert api_manager.session.headers['Authorization'] == f"Bearer {login_as_user_response['accessToken']}"
@@ -57,15 +65,20 @@ class TestAuthAPIPositive:
 
     '''
 
+
     @pytest.mark.smoke
-    def test_logout_as_user(self, common_user_registered):
+    def test_logout_as_user(self, common_user_registered, super_admin):
         #\assert api_manager.session.headers['Authorization'] == f"Bearer {login_as_user_response['accessToken']}"
         assert common_user_registered.api.session.cookies['refresh_token'] == common_user_registered.refreshToken.get('refreshToken')
 
-        common_user_registered.api.auth_api.logout_as_user()
+        common_user_registered.api.auth_api.logout()
         #assert 'Authorization' not in api_manager.session.headers
         #assert api_manager.session.headers['Authorization'] == ''
         assert ['refresh_token'] not in common_user_registered.api.session.cookies
+
+        super_admin.api.user_api.delete_user(common_user_registered.id)
+
+
 
     '''
     def test_refresh_tokens(self, common_user_created):
@@ -81,8 +94,9 @@ class TestAuthAPIPositive:
         assert common_user_registered.api.session.cookies['refresh_token'] == refresh_tokens_response['refreshToken']
     '''
 
-    def test_refresh_tokens(self, common_user_registered):
-        initial_access_token = common_user_registered.api.session.headers['Authorization']
+
+    def test_refresh_tokens(self, common_user_registered, super_admin):
+        #initial_access_token = common_user_registered.api.session.headers['Authorization']
         initial_refresh_token = common_user_registered.api.session.cookies['refresh_token']
 
         refresh_tokens_response = common_user_registered.api.auth_api.refresh_tokens()
@@ -93,8 +107,12 @@ class TestAuthAPIPositive:
         # assert api_manager.session.headers['Authorization'] == f"Bearer {refresh_tokens_response['accessToken']}"
         assert common_user_registered.api.session.cookies['refresh_token'] == refresh_tokens_response['refreshToken']
 
+        super_admin.api.user_api.delete_user(common_user_registered.id)
+
+
+
     def test_login_as_admin(self, api_manager):
-        login_as_admin_response = api_manager.auth_api.login_as_admin()
+        login_as_admin_response = api_manager.auth_api.authenticate(UserData.get_admin_creds_for_authentication())
 
         assert 'id' in  login_as_admin_response['user'], 'В ответе отсутствует id админа.'
         assert 'ADMIN' in  login_as_admin_response['user']['roles'], 'У админа отсутствует роль ADMIN.'
@@ -104,24 +122,18 @@ class TestAuthAPIPositive:
         assert api_manager.session.headers['Authorization'] == f"Bearer {login_as_admin_response['accessToken']}", 'Токен доступа, который пришел в ответ на запрос авторизации, не установлен как токен доступа сессии.'
         assert api_manager.session.cookies['refresh_token'] == login_as_admin_response['refreshToken']
 
-    '''
-    def test_delete_user(self, api_manager, fixture_login_as_user):
-        deleted_user_id = fixture_login_as_user['user']['id']
 
-        delete_user_response = api_manager.user_api.delete_user(fixture_login_as_user)
 
-        assert delete_user_response['id'] == deleted_user_id, 'id удаленного пользователя не совпадает с id пользователя, который должен был быть удален.'
+    def test_delete_user(self, common_user_created, super_admin):
+        deleted_user_data = vars(common_user_created)
 
-        api_manager.auth_api.logout_as_user()
+        delete_user_response = common_user_created.api.user_api.delete_user(deleted_user_data['id'])
 
-        api_manager.auth_api.login_as_admin()
+        assert delete_user_response['id'] == deleted_user_data['id'], 'id удаленного пользователя не совпадает с id пользователя, который должен был быть удален.'
 
-        api_manager.user_api.send_request(
-            method="GET",
-            endpoint=f'{USER_ENDPOINT}/{deleted_user_id}',
-            expected_status=404
-        )
-    '''
+        super_admin.api.user_api.get_user_info(deleted_user_data, 404)
+
+
 
     def test_create_user_as_admin(self, super_admin, fixture_user_data_for_creation_by_admin):
         fixture_user_data_for_creation_by_admin = fixture_user_data_for_creation_by_admin()
@@ -146,6 +158,9 @@ class TestAuthAPIPositive:
         assert get_created_user_response['banned'] == fixture_user_data_for_creation_by_admin["banned"], 'Зарегистрированный пользователь забанен.'
         assert date.today().strftime('%Y-%m-%d') in get_created_user_response[
             'createdAt'], 'Дата регистрации пользователя не корректна.'
+
+        super_admin.api.user_api.delete_user(create_user_response['id'])
+
 
     def test_change_user_as_admin(self, super_admin, fixture_user_data_for_creation_by_admin,
                                   fixture_test_user_created_by_admin_changed_data):
@@ -175,8 +190,11 @@ class TestAuthAPIPositive:
         assert date.today().strftime('%Y-%m-%d') in get_user_after_change_response[
             'createdAt'], 'Дата регистрации пользователя отсутствует.'
 
+        super_admin.api.user_api.delete_user(create_user_response['id'])
+
+
     def test_get_all_users_filtered_by_role(self, super_admin):
-        role = Roles.ADMIN.value
+        role = [Roles.ADMIN.value]
 
         get_all_users_filtered_by_role_response = super_admin.api.user_api.get_all_users_filtered_by_role(role)
 

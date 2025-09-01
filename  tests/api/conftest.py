@@ -1,3 +1,4 @@
+import json
 from venv import logger
 
 import requests
@@ -6,12 +7,14 @@ from pydantic import ValidationError
 
 from api.api_manager import ApiManager
 from constants.roles import Roles
+from data.payment_data import PaymentData
+from data.user_data import UserData
 from entities.user import CommonUser
 from entities.user import AdminUser
-from models.login_user_response import LogInResponse
-from models.payment_data import DataForPaymentCreation
-from models.get_user_info_response import RegisterCreateGetOrDeleteUserResponse
-from models.user_data import UserDataForRegistration, UserDataForCreationByAdmin, UserDataForLoggingIn
+from models.login_user_response_model import LogInResponse
+from models.payment_data_model import DataForPaymentCreation
+from models.get_user_info_response_model import RegisterCreateGetOrDeleteUserResponse
+from models.user_data_model import UserDataForRegistration, UserDataForCreationByAdmin, UserDataForLoggingIn
 from resources.user_creds import SuperAdminCreds
 from utils.data_generator import DataGenerator
 from faker import Faker
@@ -72,28 +75,34 @@ def super_admin(user_session):
     return super_admin
 
 @pytest.fixture
-def common_user_registered(user_session, api_manager, fixture_user_for_registration):
+def common_user_registered(user_session, api_manager, fixture_user_data_for_registration_validated):
     new_session = user_session()
-    user_data_for_creation = fixture_user_for_registration()
+    user_data_for_creation_registration = fixture_user_data_for_registration_validated()
 
-    register_common_user_response = RegisterCreateGetOrDeleteUserResponse(**api_manager.auth_api.register_user(user_data_for_creation))
+    register_common_user_response_validated = {}
+
+    try:
+        register_common_user_response_validated = RegisterCreateGetOrDeleteUserResponse(**api_manager.auth_api.register_user(user_data_for_creation_registration))
+    except ValidationError as e:
+        print(e)
+        logger.info(f'Ошибка валидации: {e}')
 
     common_user = CommonUser(
-        user_data_for_creation['email'],
-        user_data_for_creation['password'],
-        user_data_for_creation['fullName'],
-        register_common_user_response.id,
-        register_common_user_response.roles,
-        register_common_user_response.createdAt,
-        register_common_user_response.verified,
-        register_common_user_response.banned,
+        user_data_for_creation_registration['email'],
+        user_data_for_creation_registration['password'],
+        user_data_for_creation_registration['fullName'],
+        register_common_user_response_validated.id,
+        register_common_user_response_validated.roles,
+        register_common_user_response_validated.createdAt,
+        register_common_user_response_validated.verified,
+        register_common_user_response_validated.banned,
         new_session
     )
 
-    logged_in_as_common_user_response = vars(LogInResponse(**common_user.api.auth_api.authenticate(user_data_for_creation)))
+    logged_in_as_common_user_response = common_user.api.auth_api.authenticate(user_data_for_creation_registration)
 
     common_user['accessToken'] = logged_in_as_common_user_response['accessToken'],
-    common_user['refreshToken'] = logged_in_as_common_user_response['refreshToken']
+    #common_user['refreshToken'] = logged_in_as_common_user_response['refreshToken']
 
     return common_user
 
@@ -102,346 +111,156 @@ def common_user_created(user_session, super_admin, fixture_user_for_creation):
     new_session = user_session()
     user_data_for_creation = fixture_user_for_creation()
 
-    created_common_user_response =  RegisterCreateGetOrDeleteUserResponse(**super_admin.api.user_api.create_user_as_admin(user_data_for_creation))
+    created_common_user_response_validated = {}
+
+    try:
+        created_common_user_response_validated = RegisterCreateGetOrDeleteUserResponse(**super_admin.api.user_api.create_user_as_admin(user_data_for_creation))
+    except ValidationError as e:
+        pytest.fail(f'Ошибка валидации: {e}')
+        logger.info(f'Ошибка валидации: {e}')
 
     common_user = CommonUser(
         user_data_for_creation['email'],
         user_data_for_creation['password'],
         user_data_for_creation['fullName'],
-        created_common_user_response.id,
-        created_common_user_response.roles,
-        created_common_user_response.createdAt,
+        created_common_user_response_validated.id,
+        created_common_user_response_validated.roles,
+        created_common_user_response_validated.createdAt,
         user_data_for_creation['verified'],
         user_data_for_creation['banned'],
         new_session
     )
 
-    logged_in_as_common_user_response = vars(LogInResponse(**common_user.api.auth_api.authenticate(user_data_for_creation)))
+    logged_in_as_common_user_response = common_user.api.auth_api.authenticate(user_data_for_creation)
 
     common_user['accessToken'] = logged_in_as_common_user_response['accessToken'],
-    common_user['refreshToken'] = logged_in_as_common_user_response['refreshToken']
+    #common_user['refreshToken'] = logged_in_as_common_user_response['refreshToken']
 
     return common_user
 
 @pytest.fixture
-def fixture_user_for_registration(user_data_for_registration):
-    def _test_user():
+def fixture_user_data_for_registration_validated(fixture_user_data_for_registration):
+    def _user_data_for_registration_validated():
         try:
-            user_data = UserDataForRegistration(**user_data_for_registration)
+            user_data_for_registration_validated = vars(UserDataForRegistration(**fixture_user_data_for_registration))
+            return user_data_for_registration_validated
         except ValidationError as e:
-            print(e)
+            pytest.fail(f'Ошибка валидации: {e}')
             logger.info(f'Ошибка валидации: {e}')
-        else:
-            return vars(user_data)
 
-    return _test_user
+    return _user_data_for_registration_validated
 
 @pytest.fixture
-def user_data_for_registration():
-    random_email = DataGenerator.generate_valid_random_email()
-    random_name = DataGenerator.generate_random_name()
-    random_password = DataGenerator.generate_valid_random_password()
-
-    return {
-        "email": random_email,
-        "fullName": random_name,
-        "password": random_password,
-        "passwordRepeat": random_password,
-        "roles": [Roles.USER.value]
-    }
+def fixture_user_data_for_registration():
+    return UserData.get_user_data_for_registration()
 
 @pytest.fixture
-def fixture_test_user_with_non_valid_password():
-    random_email = DataGenerator.generate_valid_random_email()
-    random_name = DataGenerator.generate_random_name()
-    random_non_valid_password = DataGenerator.generate_non_valid_random_password()
-
-    return {
-        "email": random_email,
-        "fullName": random_name,
-        "password": random_non_valid_password,
-        "passwordRepeat": random_non_valid_password,
-        "roles": [Roles.USER.value]
-    }
+def fixture_user_data_for_registration_with_non_valid_password():
+    return UserData.get_non_valid_user_data_for_registration()
 
 @pytest.fixture
 def fixture_user_for_creation(fixture_user_data_for_creation_by_admin):
     def _test_user():
         try:
-            user_data = UserDataForCreationByAdmin(**fixture_user_data_for_creation_by_admin())
+            user_data_for_creation_validated = vars(UserDataForCreationByAdmin(**fixture_user_data_for_creation_by_admin()))
+            return user_data_for_creation_validated
         except ValidationError as e:
-            print(e)
+            pytest.fail(f'Ошибка валидации: {e}')
             logger.info(f'Ошибка валидации: {e}')
-        else:
-            return vars(user_data)
 
     return _test_user
 
 @pytest.fixture
 def fixture_user_data_for_creation_by_admin():
     def _user_data_for_creation_by_admin():
-        random_email = DataGenerator.generate_valid_random_email()
-        random_name = DataGenerator.generate_random_name()
-        random_password = DataGenerator.generate_valid_random_password()
-
-        return {
-            "email": random_email,
-            "fullName": random_name,
-            "password": random_password,
-            "verified": True,
-            "banned": False
-        }
+        return UserData.get_user_data_for_creation_by_admin()
 
     return _user_data_for_creation_by_admin
 
 @pytest.fixture
 def fixture_test_user_created_by_admin_changed_data():
-    random_email = DataGenerator.generate_valid_random_email()
-
-    return {
-        "email": random_email,
-        "banned": True
-    }
+    return UserData.get_user_data_for_change_by_admin()
 
 @pytest.fixture
-def fixture_register_user_response(api_manager, fixture_user_for_registration):
-    test_user_data = fixture_user_for_registration()
+def fixture_register_user_response(api_manager, fixture_user_data_for_registration_validated):
+    test_user_data = fixture_user_data_for_registration_validated()
+    test_user_data_validated = {}
 
-    return api_manager.auth_api.send_request(
-        method="POST",
-        endpoint=REGISTER_ENDPOINT,
-        data=test_user_data,
-        expected_status=201
-    )
-
-@pytest.fixture
-def fixture_register_user_data(api_manager, fixture_user_for_registration):
-    test_user_data = fixture_user_for_registration()
+    try:
+        test_user_data_validated = vars(UserDataForRegistration(**test_user_data))
+    except ValidationError as e:
+        pytest.fail(f'Ошибка валидации: {e}')
+        logger.info(f'Ошибка валидации: {e}')
 
     response = api_manager.auth_api.send_request(
         method="POST",
         endpoint=REGISTER_ENDPOINT,
-        data=test_user_data,
+        data=test_user_data_validated,
         expected_status=201
     )
 
-    #register_user_response_data = response.json()
-    #register_user_response_data['password'] = test_user_data['password']
-    return response.json()
+    try:
+        vars(RegisterCreateGetOrDeleteUserResponse(**response.json()))
+        return response
+    except ValidationError as e:
+        pytest.fail(f'Ошибка валидации: {e}')
+        logger.info(f'Ошибка валидации: {e}')
 
 @pytest.fixture
-def fixture_login_as_user(api_manager, fixture_register_user_response):
+def fixture_registered_user_data(api_manager, fixture_user_data_for_registration_validated):
+    test_user_data = fixture_user_data_for_registration_validated()
+
+    return api_manager.auth_api.register_user(test_user_data)
+
+@pytest.fixture
+def fixture_authenticate(api_manager, fixture_register_user_response):
     registered_user_creds_data = RequestUtils.get_request_body(fixture_register_user_response)
-    login_data = vars(
-        UserDataForLoggingIn(
-            email=registered_user_creds_data['email'],
-            password=registered_user_creds_data['password']
-        )
-    )
 
-    login_as_user_response = api_manager.auth_api.send_request(
-        method="POST",
-        endpoint=LOGIN_ENDPOINT,
-        data=login_data
-    )
-
-    login_as_user_response_data = login_as_user_response.json()
-    #login_as_user_response_data['password'] = login_data['password']
-    access_token = login_as_user_response_data['accessToken']
-    api_manager.auth_api._update_session_headers(Authorization=f"Bearer {access_token}")
-    return login_as_user_response_data
+    return api_manager.auth_api.authenticate(registered_user_creds_data)
 
 @pytest.fixture
-def fixture_height_order_login_as_user_function(api_manager, fixture_register_user_response):
-    def _login_as_user():
+def fixture_height_order_authenticate_function(api_manager, fixture_register_user_response):
+    def _height_order_authenticate_function():
         registered_user_creds_data = RequestUtils.get_request_body(fixture_register_user_response)
-        login_data = vars(
-            UserDataForLoggingIn(
-                email=registered_user_creds_data['email'],
-                password=registered_user_creds_data['password']
-            )
-        )
 
-        login_as_user_response = api_manager.auth_api.send_request(
-            method="POST",
-            endpoint=LOGIN_ENDPOINT,
-            data=login_data
-        )
+        return api_manager.auth_api.authenticate(registered_user_creds_data)
 
-        login_as_user_response_data = login_as_user_response.json()
-        #login_as_user_response_data['password'] = login_data['password']
-        access_token = login_as_user_response_data['accessToken']
-        api_manager.auth_api._update_session_headers(Authorization=f"Bearer {access_token}")
-        return login_as_user_response_data
-
-    return _login_as_user
-'''
-@pytest.fixture
-def login_as_admin(api_manager):
-    login_as_admin_response = api_manager.auth_api.send_request(
-        method="POST",
-        endpoint=LOGIN_ENDPOINT,
-        data= ADMIN_LOGIN_DATA
-    )
-
-    login_as_admin_response_data = login_as_admin_response.json()
-    access_token = login_as_admin_response_data['accessToken']
-    login_as_admin_response_data['password'] = ADMIN_LOGIN_DATA['password']
-    api_manager.auth_api._update_session_headers(api_manager.auth_api.session, Authorization=f"Bearer {access_token}")
-    return login_as_admin_response_data
-
-
-@pytest.fixture()
-def get_user(auth_requester, request):
-    user_id = request.param
-    yield user_id
-
-    response = auth_requester.send_request(
-        method="GET",
-        endpoint=f'{USER_ENDPOINT}/{user_id}',
-        expected_status=200
-    )
-    response_data = response.json()
-    return response_data
-
-@pytest.fixture()
-def get_user_info(api_manager, register_user):
-    api_manager.auth_api.login_as_admin()
-    registered_user_id = register_user['id']
-
-    get_user_response = api_manager.auth_api.send_request(
-        method="GET",
-        endpoint=f'{USER_ENDPOINT}/{registered_user_id}'
-    )
-    get_user_response_data = get_user_response.json()
-    return get_user_response_data
-'''
-
-'''
-@pytest.fixture
-def auth_session(test_user):
-    def _auth_session():
-        new_user_data = test_user()
-
-        register_url = f"{AUTH_URL}{REGISTER_ENDPOINT}"
-        get_user_info_response.py = requests.post(register_url, json=new_user_data, headers=HEADERS, verify=False)
-        assert  get_user_info_response.py.status_code == 201, "Ошибка регистрации пользователя"
-        user_id =  get_user_info_response.py.json()['id']
-
-        login_url = f"{AUTH_URL}{LOGIN_ENDPOINT}"
-        login_data = {
-            "email": new_user_data["email"],
-            "password": new_user_data["password"]
-        }
-        login_as_user_response = requests.post(login_url, json=login_data, headers=HEADERS, verify=False)
-        assert login_as_user_response.status_code == 200, "Ошибка авторизации"
-
-        login_as_user_response_data = login_as_user_response.json()
-        access_token = login_as_user_response_data.get("accessToken")
-        refresh_token = login_as_user_response_data.get("refreshToken")
-        assert access_token is not None, "Токен доступа отсутствует в ответе."
-        assert refresh_token is not None, "Токен обновления токена доступа отсутствует в ответе."
-
-        session = requests.Session()
-        session.headers.update(HEADERS)
-        session.headers.update({"Authorization": f"Bearer {access_token}"})
-        return session, user_id, access_token, refresh_token
-
-    return _auth_session
+    return _height_order_authenticate_function
 
 @pytest.fixture
-def admin_auth(auth_requester):
-    login_data = {
-        "email": ADMIN_EMAIL,
-        "password": ADMIN_PASSWORD
-    }
-
-    response = auth_requester.send_request(
-        method="POST",
-        endpoint=LOGIN_ENDPOINT,
-        data=login_data
-    )
-    response_data = response.json()
-
-    token = response_data["accessToken"]
-    assert token is not None, "Токен доступа отсутствует в ответе"
-
-    session = requests.Session()
-    session.headers.update(HEADERS)
-    session.headers.update({"Authorization": f"Bearer {token}"})
-    return session
-'''
-
-@pytest.fixture
-def fixture_payment(fixture_payment_data):
+def fixture_payment(fixture_valid_payment_data):
     def _fixture_payment():
         try:
-            payment = DataForPaymentCreation(**fixture_payment_data())
+            payment_data_validated = vars(DataForPaymentCreation(**fixture_valid_payment_data()))
+            return payment_data_validated
         except ValidationError as e:
-            print(e)
+            pytest.fail(f'Ошибка валидации: {e}')
             logger.info(f'Ошибка валидации: {e}')
-        else:
-            return vars(payment)
 
     return _fixture_payment
 
 @pytest.fixture
-def fixture_payment_data():
-    def _payment_data():
-        movie_id = DataGenerator.get_movie_id()
-        amount = DataGenerator.generate_random_amount()
-        card_number = DataGenerator.generate_random_card_number()
-        card_holder_name = DataGenerator.generate_random_name()
-        expiration_date = DataGenerator.generate_random_expiration_date()
-        security_code = DataGenerator.generate_random_security_code()
+def fixture_valid_payment_data():
+    def _valid_payment_data():
+        return PaymentData.get_valid_payment_data()
 
-        return {
-            "movieId":  movie_id,
-            "amount": amount,
-            "card": {
-                "cardNumber": "4242424242424242",
-                "cardHolder": card_holder_name,
-                "expirationDate": "12/25",
-                "securityCode": 123
-            }
-        }
-
-    return _payment_data
+    return _valid_payment_data
 
 @pytest.fixture
 def fixture_non_valid_payment_data():
     def _non_valid_payment_data():
-        movie_id = DataGenerator.get_movie_id()
-        amount = DataGenerator.generate_random_amount()
-        card_number = DataGenerator.generate_random_card_number()
-        card_holder_name = DataGenerator.generate_random_name()
-        expiration_date = DataGenerator.generate_random_expiration_date()
-        security_code = DataGenerator.generate_random_security_code()
-
-        return {
-                "movieId":  movie_id,
-                "amount": amount,
-                "card": {
-                    "cardNumber": "4242424242424242",
-                    "cardHolder": card_holder_name,
-                    "expirationDate": "12/25",
-                    "securityCode": 321
-                }
-        }
+        return PaymentData.get_non_valid_payment_data()
 
     return _non_valid_payment_data
 
 @pytest.fixture
-def fixture_create_payment(api_manager, fixture_payment, fixture_login_as_user):
+def fixture_create_payment(fixture_payment, common_user_registered):
     def _create_payment():
-        create_payment_response = api_manager.payment_api.send_request(
-            method="POST",
-            endpoint=CREATE_PAYMENT_ENDPOINT,
-            data=fixture_payment(),
-            expected_status=201
+        create_payment_response = common_user_registered.api.payment_api.create_payment(
+            data=fixture_payment()
         )
 
-        return create_payment_response.json()
+        return create_payment_response
 
     return _create_payment
 
