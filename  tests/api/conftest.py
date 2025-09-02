@@ -102,7 +102,7 @@ def common_user_registered(user_session, api_manager, fixture_user_data_for_regi
     logged_in_as_common_user_response = common_user.api.auth_api.authenticate(user_data_for_creation_registration)
 
     common_user['accessToken'] = logged_in_as_common_user_response['accessToken'],
-    #common_user['refreshToken'] = logged_in_as_common_user_response['refreshToken']
+    common_user['refreshToken'] = logged_in_as_common_user_response['refreshToken']
 
     return common_user
 
@@ -134,7 +134,7 @@ def common_user_created(user_session, super_admin, fixture_user_for_creation):
     logged_in_as_common_user_response = common_user.api.auth_api.authenticate(user_data_for_creation)
 
     common_user['accessToken'] = logged_in_as_common_user_response['accessToken'],
-    #common_user['refreshToken'] = logged_in_as_common_user_response['refreshToken']
+    common_user['refreshToken'] = logged_in_as_common_user_response['refreshToken']
 
     return common_user
 

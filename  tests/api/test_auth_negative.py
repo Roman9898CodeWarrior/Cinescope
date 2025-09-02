@@ -10,6 +10,7 @@ class TestAuthAPINegative:
 
         assert register_user_response['message'] == ['Пароль должен содержать хотя бы одну цифру'], "Текст ошибки не корректный."
 
+
     def test_try_register_user_with_non_unique_email(self, api_manager, fixture_user_data_for_registration_validated,
                                                      fixture_registered_user_data, super_admin):
         registered_user_email = fixture_registered_user_data['email']
@@ -20,6 +21,7 @@ class TestAuthAPINegative:
         api_manager.auth_api.register_user(test_user_2, 409)
 
         super_admin.api.user_api.delete_user(fixture_registered_user_data['id'])
+
 
     def test_try_to_login_as_user_with_wrong_email(self, api_manager, fixture_register_user_response, super_admin):
         registered_user_creds_data = RequestUtils.get_request_body(fixture_register_user_response)
@@ -48,6 +50,8 @@ class TestAuthAPINegative:
 
         super_admin.api.user_api.delete_user(create_user_response['id'])
 
+
+
     def test_try_to_change_user_as_admin_with_wrong_role(self, super_admin, fixture_user_data_for_creation_by_admin,
                                                          fixture_test_user_created_by_admin_changed_data):
         test_user_created_by_admin_data = fixture_user_data_for_creation_by_admin()
@@ -58,6 +62,5 @@ class TestAuthAPINegative:
 
         super_admin.api.user_api.change_user_as_admin(create_user_response, fixture_test_user_created_by_admin_changed_data, 400)
 
-        super_admin.api.user_api.delete_user(create_user_response['id'])
 
 

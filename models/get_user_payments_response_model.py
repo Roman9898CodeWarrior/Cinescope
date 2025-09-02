@@ -1,6 +1,5 @@
 from pydantic import BaseModel, RootModel, field_validator
 
-
 class Payment(BaseModel):
     id: int
     userId: str
@@ -11,4 +10,5 @@ class Payment(BaseModel):
     status: str
 
 class UserPaymentsResponse(RootModel[list[Payment]]): ...
+
 

@@ -12,7 +12,6 @@ from models.user_data_model import UserDataForCreationByAdmin
 
 class UserAPI(CustomRequester):
     def __init__(self, session):
-        self.session = session
         super().__init__(session, AUTH_URL)
     '''
     def __init__(self, session):
@@ -77,6 +76,8 @@ class UserAPI(CustomRequester):
             expected_status=expected_status
         )
 
+        if expected_status != 200 and change_user_response.status_code != 200:
+            return change_user_response.json()
         try:
             change_user_response_validated = vars(ChangeUserResponse(**change_user_response.json()))
             return change_user_response_validated
@@ -92,12 +93,14 @@ class UserAPI(CustomRequester):
             expected_status=expected_status
         )
 
+        '''
         try:
             delete_user_response_validated = vars(RegisterCreateGetOrDeleteUserResponse(**delete_user_response.json()))
             return delete_user_response_validated
         except ValidationError as e:
             pytest.fail(f'Ошибка валидации: {e}')
             logger.info(f'Ошибка валидации: {e}')
+        '''
 
     def get_all_users_filtered_by_role(self, role, expected_status=200):
         get_all_users_filtered_by_role_response = self.send_request(

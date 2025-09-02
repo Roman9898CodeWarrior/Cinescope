@@ -13,7 +13,6 @@ from models.user_data_model import UserDataForLoggingIn, UserDataForRegistration
 
 class AuthAPI(CustomRequester):
     def __init__(self, session):
-        self.session = session
         super().__init__(session, AUTH_URL)
 
     def authenticate(self, registered_user_data, expected_status=200):

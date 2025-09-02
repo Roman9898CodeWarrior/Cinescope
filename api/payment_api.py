@@ -11,7 +11,6 @@ from models.payment_data_model import DataForPaymentCreation
 
 class PaymentAPI(CustomRequester):
     def __init__(self, session):
-        self.session = session
         super().__init__(session, PAYMENT_URL)
 
     def create_payment(self, payment_data,  expected_status=201):
@@ -32,6 +31,16 @@ class PaymentAPI(CustomRequester):
 
         return create_payment_response.json()
 
+    def create_payment_without_payment_data_validation(self, payment_data,  expected_status=201):
+        create_payment_response = self.send_request(
+            method="POST",
+            endpoint=CREATE_PAYMENT_ENDPOINT,
+            data=payment_data,
+            expected_status=expected_status
+        )
+
+        return create_payment_response.json()
+
     def get_user_payments(self, expected_status=200):
         get_user_payments_response = self.send_request(
             method="GET",
@@ -39,12 +48,15 @@ class PaymentAPI(CustomRequester):
             expected_status=expected_status
         )
 
-        try:
-            get_user_payments_response_validated = vars(UserPaymentsResponse.model_validate(get_user_payments_response.json()))
-            return get_user_payments_response_validated
-        except ValidationError as e:
-            pytest.fail(f'Ошибка валидации: {e}')
-            logger.info(f'Ошибка валидации: {e}')
+        if expected_status != 200 and get_user_payments_response.status_code != 200:
+            return get_user_payments_response
+        else:
+            try:
+                get_user_payments_response_validated = vars(UserPaymentsResponse.model_validate(get_user_payments_response.json()))
+                return get_user_payments_response_validated
+            except ValidationError as e:
+                pytest.fail(f'Ошибка валидации: {e}')
+                logger.info(f'Ошибка валидации: {e}')
 
     def get_another_user_payments_as_admin(self, user_id, expected_status=200):
         get_another_user_payments_as_admin_response = self.send_request(
@@ -53,13 +65,16 @@ class PaymentAPI(CustomRequester):
             expected_status=expected_status
         )
 
-        try:
-            get_another_user_payments_as_admin_response = vars(
-                UserPaymentsResponse.model_validate(get_another_user_payments_as_admin_response.json()))
-            return get_another_user_payments_as_admin_response
-        except ValidationError as e:
-            pytest.fail(f'Ошибка валидации: {e}')
-            logger.info(f'Ошибка валидации: {e}')
+        if expected_status != 200 and get_another_user_payments_as_admin_response.status_code != 200:
+            return get_another_user_payments_as_admin_response.json()
+        else:
+            try:
+                get_another_user_payments_as_admin_response = vars(
+                    UserPaymentsResponse.model_validate(get_another_user_payments_as_admin_response.json()))
+                return get_another_user_payments_as_admin_response
+            except ValidationError as e:
+                pytest.fail(f'Ошибка валидации: {e}')
+                logger.info(f'Ошибка валидации: {e}')
 
     def get_all_payments_by_admin(self, params=None, expected_status=200):
         get_all_payments_by_admin_response = self.send_request(

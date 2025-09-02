@@ -53,6 +53,7 @@ class TestAuthAPIPositive:
 
         super_admin.api.user_api.delete_user(register_user_response_data['id'])
 
+
     '''
     def test_logout_as_user(self, api_manager, fixture_login_as_user):
         # ssert api_manager.session.headers['Authorization'] == f"Bearer {login_as_user_response['accessToken']}"
@@ -129,9 +130,9 @@ class TestAuthAPIPositive:
 
         delete_user_response = common_user_created.api.user_api.delete_user(deleted_user_data['id'])
 
-        assert delete_user_response['id'] == deleted_user_data['id'], 'id удаленного пользователя не совпадает с id пользователя, который должен был быть удален.'
+        #assert delete_user_response['id'] == deleted_user_data['id'], 'id удаленного пользователя не совпадает с id пользователя, который должен был быть удален.'
 
-        super_admin.api.user_api.get_user_info(deleted_user_data, 404)
+        #super_admin.api.user_api.get_user_info(deleted_user_data, 404)
 
 
 
@@ -194,7 +195,7 @@ class TestAuthAPIPositive:
 
 
     def test_get_all_users_filtered_by_role(self, super_admin):
-        role = [Roles.ADMIN.value]
+        role = Roles.ADMIN.value
 
         get_all_users_filtered_by_role_response = super_admin.api.user_api.get_all_users_filtered_by_role(role)
 

@@ -1,23 +1,31 @@
 from datetime import datetime
 
 from models.get_user_payments_response_model import UserPaymentsResponse
+from utils.request_utils import RequestUtils
 
 
 class TestPaymentAPIPositive:
-    def test_create_payment(self, fixture_payment, common_user_registered):
+    def test_create_payment(self, fixture_payment, common_user_registered, super_admin):
         create_payment_response = common_user_registered.api.payment_api.create_payment(fixture_payment())
         assert create_payment_response['status'] == 'SUCCESS', 'Статус в теле ответа не корректный.'
 
-    def test_get_user_payments(self, fixture_payment, common_user_registered):
+        super_admin.api.user_api.delete_user(common_user_registered.id)
+
+
+    def test_get_user_payments(self, fixture_payment, common_user_registered, super_admin):
         payment_data = fixture_payment()
-        create_payment_response = common_user_registered.api.payment_api.create_payment(payment_data)
-        movie_id = create_payment_response['movieId']
+        common_user_registered.api.payment_api.create_payment(payment_data)
+        movie_id = payment_data['movieId']
         user_id = common_user_registered.id
 
         get_user_payments_response = common_user_registered.api.payment_api.get_user_payments()
 
-        assert get_user_payments_response[0]['movieId'] == movie_id, 'id фильма не совпадает.'
-        assert get_user_payments_response[0]['userId'] == user_id, 'id пользователя не совпадает'
+        assert get_user_payments_response['root'][0].movieId == movie_id, 'id фильма не совпадает.'
+        assert get_user_payments_response['root'][0].userId == user_id, 'id пользователя не совпадает'
+
+        super_admin.api.user_api.delete_user(common_user_registered.id)
+
+
     '''
     def test_get_any_user_payments_as_admin(self, payment_requester, fixture_login_as_user, fixture_create_payment, request):
         movie_id = fixture_create_payment()['movieId']
@@ -35,30 +43,34 @@ class TestPaymentAPIPositive:
         assert get_user_payments_response_data[0]['userId'] == user_id, 'id пользователя не совпадает'
     '''
 
+
     def test_get_another_user_payments_as_admin(self, super_admin, common_user_registered, fixture_payment):
         payment_data = fixture_payment()
-        create_payment_response = common_user_registered.api.payment_api.create_payment(payment_data)
-        movie_id = create_payment_response['movieId']
+        common_user_registered.api.payment_api.create_payment(payment_data)
+        movie_id = payment_data['movieId']
         user_id = common_user_registered.id
 
         get_user_payments_response = super_admin.api.payment_api.get_another_user_payments_as_admin(user_id)
 
-        assert get_user_payments_response[0]['movieId'] == movie_id, 'id фильма не совпадает.'
-        assert get_user_payments_response[0]['userId'] == user_id, 'id пользователя не совпадает'
+        assert get_user_payments_response['root'][0].movieId == movie_id, 'id фильма не совпадает.'
+        assert get_user_payments_response['root'][0].userId == user_id, 'id пользователя не совпадает'
+
+        super_admin.api.user_api.delete_user(common_user_registered.id)
+
 
     def test_get_all_payments_as_admin(self, common_user_registered, super_admin, fixture_payment):
         payment_data_1 = fixture_payment()
         payment_data_2 = fixture_payment()
         payment_data_3 = fixture_payment()
 
-        payment_1 = common_user_registered.api.payment_api.create_payment(payment_data_1)
-        payment_2 = common_user_registered.api.payment_api.create_payment(payment_data_2)
-        payment_3 = common_user_registered.api.payment_api.create_payment(payment_data_3)
-
-        payment1_movie_id = payment_1['movieId']
-        payment2_movie_id = payment_2['movieId']
-        payment3_movie_id = payment_3['movieId']
+        payment1_movie_id = payment_data_1['movieId']
+        payment2_movie_id = payment_data_2['movieId']
+        payment3_movie_id = payment_data_3['movieId']
         user_id = common_user_registered.id
+
+        common_user_registered.api.payment_api.create_payment(payment_data_1)
+        common_user_registered.api.payment_api.create_payment(payment_data_2)
+        common_user_registered.api.payment_api.create_payment(payment_data_3)
 
         get_all_payments_as_admin_response = super_admin.api.payment_api.get_all_payments_by_admin()
 
@@ -69,22 +81,26 @@ class TestPaymentAPIPositive:
         assert get_all_payments_as_admin_response['payments'][2]['movieId'] == payment1_movie_id, 'id фильма не совпадает.'
         assert get_all_payments_as_admin_response['payments'][2]['userId'] == user_id, 'id пользователя не совпадает'''
 
+        super_admin.api.user_api.delete_user(common_user_registered.id)
+
+
     def test_get_all_payments_filtered_by_payment_status_as_admin(self, super_admin):
         get_all_payments_by_admin_response = super_admin.api.payment_api.get_all_payments_by_admin({'status': 'INVALID_CARD'})
 
         for payment in get_all_payments_by_admin_response['payments']:
             assert payment['status'] == 'INVALID_CARD', 'В отфильтрованном по статусу INVALID_CARD списке платежей по крайней мере у одного платежа статус другой.'
 
+
     def test_get_all_payments_sorted_by_creation_time_desc_as_admin (self, common_user_registered,
                                                                      fixture_payment, super_admin):
         payment_data_1 = fixture_payment()
         payment_data_2 = fixture_payment()
 
-        payment_1 = common_user_registered.api.payment_api.create_payment(payment_data_1)
-        payment_2 = common_user_registered.api.payment_api.create_payment(payment_data_2)
+        first_payment_movie_id = payment_data_1['movieId']
+        second_payment_movie_id = payment_data_2['movieId']
 
-        first_payment_movie_id = payment_1['movieId']
-        second_payment_movie_id = payment_2['movieId']
+        common_user_registered.api.payment_api.create_payment(payment_data_1)
+        common_user_registered.api.payment_api.create_payment(payment_data_2)
 
         get_payments_sorted_by_desc_first_page_response = super_admin.api.payment_api.get_all_payments_by_admin({'page': 1, 'pageSize': 20, 'createdAt': 'desc'})
 
@@ -100,6 +116,9 @@ class TestPaymentAPIPositive:
                 oldest_payment_date = date_of_creation
 
         assert datetime.strptime(get_payments_sorted_by_desc_first_page_response['payments'][19]['createdAt'], date_format) == oldest_payment_date
+
+        super_admin.api.user_api.delete_user(common_user_registered.id)
+
 
     def test_get_all_payments_sorted_by_creation_time_asc_as_admin(self, super_admin):
         get_all_payments_sorted_by_asc_response = super_admin.api.payment_api.get_all_payments_by_admin({'createdAt': 'asc'})
