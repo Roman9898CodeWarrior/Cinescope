@@ -42,9 +42,12 @@ class DataGenerator:
         return faker.random_int(0, 999)
 
     @staticmethod
+    def generate_random_int():
+        return faker.random_int(1, 25000)
+
+    @staticmethod
     def generate_random_name():
         return f"{faker.first_name()} {faker.last_name()}"
-
 
     @staticmethod
     def generate_valid_random_password():

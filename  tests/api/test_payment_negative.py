@@ -18,7 +18,7 @@ class TestPaymentAPINegative:
         elif card_param == 'securityCode':
             assert 'card.Поле card.securityCode должно быть меньше 1000' in create_payment_response['message'], 'Сообщение об ошибке не корректное.'
 
-        super_admin.api.user_api.delete_user(common_user_registered.id)
+        #super_admin.api.user_api.delete_user(common_user_registered.id)
 
 
     def test_try_to_create_payment_without_authorisation(self, api_manager, fixture_payment):
@@ -28,7 +28,7 @@ class TestPaymentAPINegative:
     def test_try_to_get_all_users_payments_as_user(self, common_user_created, super_admin):
         common_user_created.api.payment_api.get_all_payments_by_admin(expected_status=403)
 
-        super_admin.api.user_api.delete_user(common_user_created.id)
+        #super_admin.api.user_api.delete_user(common_user_created.id)
 
 
     def test_try_to_get_another_user_payments_as_admin_with_wrong_user_id(self, super_admin):
@@ -48,9 +48,9 @@ class TestPaymentAPINegative:
 
         assert response_message == 'Forbidden resource', f'Ожидался статус "Forbidden resource", а пришел {response_message}.'
 
-        super_admin.api.user_api.delete_user(common_user_registered.id)
+        #super_admin.api.user_api.delete_user(common_user_registered.id)
 
-        super_admin.api.user_api.delete_user(common_user_created.id)
+        #super_admin.api.user_api.delete_user(common_user_created.id)
 
 
     def test_try_to_get_all_payments_filtered_by_wrong_payment_status_as_admin(self, super_admin):

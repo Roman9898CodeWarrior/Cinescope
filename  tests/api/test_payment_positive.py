@@ -9,7 +9,7 @@ class TestPaymentAPIPositive:
         create_payment_response = common_user_registered.api.payment_api.create_payment(fixture_payment())
         assert create_payment_response['status'] == 'SUCCESS', 'Статус в теле ответа не корректный.'
 
-        super_admin.api.user_api.delete_user(common_user_registered.id)
+        #super_admin.api.user_api.delete_user(common_user_registered.id)
 
 
     def test_get_user_payments(self, fixture_payment, common_user_registered, super_admin):
@@ -23,7 +23,7 @@ class TestPaymentAPIPositive:
         assert get_user_payments_response['root'][0].movieId == movie_id, 'id фильма не совпадает.'
         assert get_user_payments_response['root'][0].userId == user_id, 'id пользователя не совпадает'
 
-        super_admin.api.user_api.delete_user(common_user_registered.id)
+        #super_admin.api.user_api.delete_user(common_user_registered.id)
 
 
     '''
@@ -55,7 +55,7 @@ class TestPaymentAPIPositive:
         assert get_user_payments_response['root'][0].movieId == movie_id, 'id фильма не совпадает.'
         assert get_user_payments_response['root'][0].userId == user_id, 'id пользователя не совпадает'
 
-        super_admin.api.user_api.delete_user(common_user_registered.id)
+        #super_admin.api.user_api.delete_user(common_user_registered.id)
 
 
     def test_get_all_payments_as_admin(self, common_user_registered, super_admin, fixture_payment):
@@ -81,7 +81,7 @@ class TestPaymentAPIPositive:
         assert get_all_payments_as_admin_response['payments'][2]['movieId'] == payment1_movie_id, 'id фильма не совпадает.'
         assert get_all_payments_as_admin_response['payments'][2]['userId'] == user_id, 'id пользователя не совпадает'''
 
-        super_admin.api.user_api.delete_user(common_user_registered.id)
+        #super_admin.api.user_api.delete_user(common_user_registered.id)
 
 
     def test_get_all_payments_filtered_by_payment_status_as_admin(self, super_admin):
@@ -117,7 +117,7 @@ class TestPaymentAPIPositive:
 
         assert datetime.strptime(get_payments_sorted_by_desc_first_page_response['payments'][19]['createdAt'], date_format) == oldest_payment_date
 
-        super_admin.api.user_api.delete_user(common_user_registered.id)
+        #super_admin.api.user_api.delete_user(common_user_registered.id)
 
 
     def test_get_all_payments_sorted_by_creation_time_asc_as_admin(self, super_admin):

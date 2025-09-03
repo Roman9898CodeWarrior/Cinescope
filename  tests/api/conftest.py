@@ -1,9 +1,12 @@
 import json
+from datetime import datetime
 from venv import logger
 
 import requests
 import pytest
 from pydantic import ValidationError
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 from api.api_manager import ApiManager
 from constants.roles import Roles
@@ -14,15 +17,55 @@ from entities.user import AdminUser
 from models.login_user_response_model import LogInResponse
 from models.payment_data_model import DataForPaymentCreation
 from models.get_user_info_response_model import RegisterCreateGetOrDeleteUserResponse
-from models.user_data_model import UserDataForRegistration, UserDataForCreationByAdmin, UserDataForLoggingIn
-from resources.user_creds import SuperAdminCreds
+from models.user_data_model import UserDataForRegistration, UserDataForCreationByAdmin, UserDataForLoggingIn, \
+    UserDBModel
+from resources.user_creds import SuperAdminCreds, DBCreds
 from utils.data_generator import DataGenerator
 from faker import Faker
-from constants.constants import REGISTER_ENDPOINT, \
-    LOGIN_ENDPOINT, CREATE_PAYMENT_ENDPOINT
+from constants.constants import REGISTER_ENDPOINT, HOST, PORT, DATABASE_NAME
 from utils.request_utils import RequestUtils
 
 faker = Faker()
+
+HOST = HOST
+PORT = PORT
+DATABASE_NAME = DATABASE_NAME
+USERNAME = DBCreds.USERNAME
+PASSWORD = DBCreds.PASSWORD
+
+engine = create_engine(f"postgresql+psycopg2://{USERNAME}:{PASSWORD}@{HOST}:{PORT}/{DATABASE_NAME}")
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+@pytest.fixture(scope="module")
+def db_session():
+    db_session = SessionLocal()
+    yield db_session
+
+    db_session.close()
+
+@pytest.fixture(scope="module")
+def db_session_with_adding_new_user_to_db():
+    session = SessionLocal()
+
+    test_user = UserDBModel(
+        id="test_id",
+        email=DataGenerator.generate_valid_random_email(),
+        full_name=DataGenerator.generate_random_name(),
+        password=DataGenerator.generate_valid_random_password(),
+        created_at=datetime.now(),
+        updated_at=datetime.now(),
+        verified=False,
+        banned=False,
+        roles="{USER}"
+    )
+    session.add(test_user)
+    session.commit()
+
+    yield session
+
+    session.delete(test_user)
+    session.commit()
+    session.close()
 
 @pytest.fixture(scope="session")
 def basic_session():
@@ -87,7 +130,7 @@ def common_user_registered(user_session, api_manager, fixture_user_data_for_regi
         print(e)
         logger.info(f'Ошибка валидации: {e}')
 
-    common_user = CommonUser(
+    common_user_registered = CommonUser(
         user_data_for_creation_registration['email'],
         user_data_for_creation_registration['password'],
         user_data_for_creation_registration['fullName'],
@@ -99,12 +142,14 @@ def common_user_registered(user_session, api_manager, fixture_user_data_for_regi
         new_session
     )
 
-    logged_in_as_common_user_response = common_user.api.auth_api.authenticate(user_data_for_creation_registration)
+    logged_in_as_common_user_response = common_user_registered.api.auth_api.authenticate(user_data_for_creation_registration)
 
-    common_user['accessToken'] = logged_in_as_common_user_response['accessToken'],
-    common_user['refreshToken'] = logged_in_as_common_user_response['refreshToken']
+    common_user_registered['accessToken'] = logged_in_as_common_user_response['accessToken'],
+    common_user_registered['refreshToken'] = logged_in_as_common_user_response['refreshToken']
 
-    return common_user
+    yield common_user_registered
+
+    common_user_registered.api.user_api.delete_user(common_user_registered.id)
 
 @pytest.fixture
 def common_user_created(user_session, super_admin, fixture_user_for_creation):
@@ -119,7 +164,7 @@ def common_user_created(user_session, super_admin, fixture_user_for_creation):
         pytest.fail(f'Ошибка валидации: {e}')
         logger.info(f'Ошибка валидации: {e}')
 
-    common_user = CommonUser(
+    common_user_created = CommonUser(
         user_data_for_creation['email'],
         user_data_for_creation['password'],
         user_data_for_creation['fullName'],
@@ -131,12 +176,46 @@ def common_user_created(user_session, super_admin, fixture_user_for_creation):
         new_session
     )
 
-    logged_in_as_common_user_response = common_user.api.auth_api.authenticate(user_data_for_creation)
+    logged_in_as_common_user_response = common_user_created.api.auth_api.authenticate(user_data_for_creation)
 
-    common_user['accessToken'] = logged_in_as_common_user_response['accessToken'],
-    common_user['refreshToken'] = logged_in_as_common_user_response['refreshToken']
+    common_user_created['accessToken'] = logged_in_as_common_user_response['accessToken'],
+    common_user_created['refreshToken'] = logged_in_as_common_user_response['refreshToken']
 
-    return common_user
+    yield common_user_created
+
+    common_user_created.api.user_api.delete_user(common_user_created.id)
+
+@pytest.fixture
+def common_user_created_without_deleting_user_after_test(user_session, super_admin, fixture_user_for_creation):
+    new_session = user_session()
+    user_data_for_creation = fixture_user_for_creation()
+
+    created_common_user_response_validated = {}
+
+    try:
+        created_common_user_response_validated = RegisterCreateGetOrDeleteUserResponse(**super_admin.api.user_api.create_user_as_admin(user_data_for_creation))
+    except ValidationError as e:
+        pytest.fail(f'Ошибка валидации: {e}')
+        logger.info(f'Ошибка валидации: {e}')
+
+    common_user_created = CommonUser(
+        user_data_for_creation['email'],
+        user_data_for_creation['password'],
+        user_data_for_creation['fullName'],
+        created_common_user_response_validated.id,
+        created_common_user_response_validated.roles,
+        created_common_user_response_validated.createdAt,
+        user_data_for_creation['verified'],
+        user_data_for_creation['banned'],
+        new_session
+    )
+
+    logged_in_as_common_user_response = common_user_created.api.auth_api.authenticate(user_data_for_creation)
+
+    common_user_created['accessToken'] = logged_in_as_common_user_response['accessToken'],
+    common_user_created['refreshToken'] = logged_in_as_common_user_response['refreshToken']
+
+    return common_user_created
 
 @pytest.fixture
 def fixture_user_data_for_registration_validated(fixture_user_data_for_registration):
@@ -182,7 +261,7 @@ def fixture_test_user_created_by_admin_changed_data():
     return UserData.get_user_data_for_change_by_admin()
 
 @pytest.fixture
-def fixture_register_user_response(api_manager, fixture_user_data_for_registration_validated):
+def fixture_register_user_response(super_admin, fixture_user_data_for_registration_validated):
     test_user_data = fixture_user_data_for_registration_validated()
     test_user_data_validated = {}
 
@@ -192,7 +271,7 @@ def fixture_register_user_response(api_manager, fixture_user_data_for_registrati
         pytest.fail(f'Ошибка валидации: {e}')
         logger.info(f'Ошибка валидации: {e}')
 
-    response = api_manager.auth_api.send_request(
+    response = super_admin.api.auth_api.send_request(
         method="POST",
         endpoint=REGISTER_ENDPOINT,
         data=test_user_data_validated,
@@ -201,7 +280,9 @@ def fixture_register_user_response(api_manager, fixture_user_data_for_registrati
 
     try:
         vars(RegisterCreateGetOrDeleteUserResponse(**response.json()))
-        return response
+        yield response
+
+        super_admin.api.user_api.delete_user(response.json()['id'])
     except ValidationError as e:
         pytest.fail(f'Ошибка валидации: {e}')
         logger.info(f'Ошибка валидации: {e}')

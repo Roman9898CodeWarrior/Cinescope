@@ -7,10 +7,9 @@ HEADERS = {
     "Accept": "application/json"
 }
 
-ADMIN_LOGIN_DATA = {
-    "email": 'api1@gmail.com',
-    "password": 'asdqwe123Q'
-}
+HOST = "80.90.191.123"
+PORT = 31200
+DATABASE_NAME = "db_movies"
 
 REGISTER_ENDPOINT = "register"
 LOGIN_ENDPOINT = "login"

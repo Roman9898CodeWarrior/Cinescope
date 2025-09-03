@@ -1,4 +1,5 @@
 from constants.roles import Roles
+from resources.user_creds import SuperAdminCreds
 from utils.data_generator import DataGenerator
 
 
@@ -57,6 +58,6 @@ class UserData:
     @staticmethod
     def get_admin_creds_for_authentication():
         return {
-            "email": 'api1@gmail.com',
-            "password": 'asdqwe123Q'
+            "email": SuperAdminCreds.EMAIL,
+            "password": SuperAdminCreds.PASSWORD
         }

@@ -1,3 +1,4 @@
+import datetime
 from datetime import date
 
 import pytest
@@ -5,12 +6,13 @@ import pytest
 from constants.constants import USER_ENDPOINT
 from constants.roles import Roles
 from data.user_data import UserData
+from models.user_data_model import UserDBModel
 from utils.request_utils import RequestUtils
 
 
 class TestAuthAPIPositive:
     @pytest.mark.smoke
-    def test_register_user(self, api_manager, fixture_user_data_for_registration_validated, super_admin):
+    def test_register_user(self, api_manager, fixture_user_data_for_registration_validated, super_admin, db_session):
         test_user_data = fixture_user_data_for_registration_validated()
 
         register_user_response = api_manager.auth_api.register_user(test_user_data)
@@ -34,6 +36,14 @@ class TestAuthAPIPositive:
         assert date.today().strftime('%Y-%m-%d') in get_user_response[
             'createdAt'], 'Дата регистрации пользователя не корректна.'
 
+        '''
+        users_from_db = db_session.query(UserDBModel).filter(UserDBModel.id == register_user_response.id)
+
+        assert users_from_db.count() == 1, "обьект не попал в базу данных"
+        
+        user_from_db = users_from_db.first()
+        '''
+
         super_admin.api.user_api.delete_user(register_user_response['id'])
 
 
@@ -51,7 +61,7 @@ class TestAuthAPIPositive:
         assert api_manager.session.headers['Authorization'] == f"Bearer {login_as_user_response['accessToken']}"
         assert api_manager.session.cookies['refresh_token'] == login_as_user_response['refreshToken']
 
-        super_admin.api.user_api.delete_user(register_user_response_data['id'])
+        #super_admin.api.user_api.delete_user(register_user_response_data['id'])
 
 
     '''
@@ -77,7 +87,7 @@ class TestAuthAPIPositive:
         #assert api_manager.session.headers['Authorization'] == ''
         assert ['refresh_token'] not in common_user_registered.api.session.cookies
 
-        super_admin.api.user_api.delete_user(common_user_registered.id)
+        #super_admin.api.user_api.delete_user(common_user_registered.id)
 
 
 
@@ -108,7 +118,7 @@ class TestAuthAPIPositive:
         # assert api_manager.session.headers['Authorization'] == f"Bearer {refresh_tokens_response['accessToken']}"
         assert common_user_registered.api.session.cookies['refresh_token'] == refresh_tokens_response['refreshToken']
 
-        super_admin.api.user_api.delete_user(common_user_registered.id)
+       #super_admin.api.user_api.delete_user(common_user_registered.id)
 
 
 
@@ -125,14 +135,13 @@ class TestAuthAPIPositive:
 
 
 
-    def test_delete_user(self, common_user_created, super_admin):
-        deleted_user_data = vars(common_user_created)
-
-        delete_user_response = common_user_created.api.user_api.delete_user(deleted_user_data['id'])
+    def test_delete_user(self, common_user_created_without_deleting_user_after_test, super_admin):
+        #user_data = vars(common_user_created_without_deleting_user_after_test)
+        delete_user_response = common_user_created_without_deleting_user_after_test.api.user_api.delete_user(common_user_created_without_deleting_user_after_test.id)
 
         #assert delete_user_response['id'] == deleted_user_data['id'], 'id удаленного пользователя не совпадает с id пользователя, который должен был быть удален.'
 
-        #super_admin.api.user_api.get_user_info(deleted_user_data, 404)
+        #super_admin.api.user_api.get_user_info(user_data, 404)
 
 
 

@@ -31,7 +31,7 @@ class TestAuthAPINegative:
 
         assert try_to_authenticate_response.json()['message'] == 'Неверный логин или пароль', "Текст ошибки не корректный."
 
-        super_admin.api.user_api.delete_user(fixture_register_user_response.json()['id'])
+        #super_admin.api.user_api.delete_user(fixture_register_user_response.json()['id'])
 
 
     def test_try_to_create_user_with_non_unique_email_as_admin(self, super_admin,
@@ -61,6 +61,8 @@ class TestAuthAPINegative:
         fixture_test_user_created_by_admin_changed_data['roles'] = ['USEROK']
 
         super_admin.api.user_api.change_user_as_admin(create_user_response, fixture_test_user_created_by_admin_changed_data, 400)
+
+        super_admin.api.user_api.delete_user(create_user_response['id'])
 
 
 

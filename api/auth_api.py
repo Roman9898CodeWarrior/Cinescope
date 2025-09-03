@@ -3,7 +3,7 @@ from venv import logger
 import pytest
 from pydantic import ValidationError
 
-from constants.constants import REGISTER_ENDPOINT, LOGIN_ENDPOINT, LOGOUT_ENDPOINT, REFRESH_TOKENS_ENDPOINT, AUTH_URL, ADMIN_LOGIN_DATA
+from constants.constants import REGISTER_ENDPOINT, LOGIN_ENDPOINT, LOGOUT_ENDPOINT, REFRESH_TOKENS_ENDPOINT, AUTH_URL
 from custom_requester.custom_requester import CustomRequester
 from models.get_user_info_response_model import RegisterCreateGetOrDeleteUserResponse
 from models.login_user_response_model import LogInResponse
