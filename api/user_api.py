@@ -1,5 +1,6 @@
 from venv import logger
 
+import allure
 import pytest
 from pydantic import ValidationError
 
@@ -18,7 +19,7 @@ class UserAPI(CustomRequester):
         super().__init__(session, AUTH_URL)
     '''
 
-
+    @allure.step('Получение данных пользователя.')
     def get_user_info(self, user_data, expected_status=200):
         registered_user_id = user_data['id']
 
@@ -38,7 +39,7 @@ class UserAPI(CustomRequester):
                 pytest.fail(f'Ошибка валидации: {e}')
                 logger.info(f'Ошибка валидации: {e}')
 
-
+    @allure.step('Создание пользователя админом.')
     def create_user_as_admin(self, user_data_for_creation_by_admin, expected_status=201):
         user_data_for_creation = {}
 
@@ -65,7 +66,7 @@ class UserAPI(CustomRequester):
                 pytest.fail(f'Ошибка валидации: {e}')
                 logger.info(f'Ошибка валидации: {e}')
 
-
+    @allure.step('Изменение данных пользователя админом.')
     def change_user_as_admin(self, test_user_created_by_admin, test_user_created_by_admin_changed_data, expected_status=200):
         created_user_id = test_user_created_by_admin['id']
 
@@ -85,7 +86,7 @@ class UserAPI(CustomRequester):
             pytest.fail(f'Ошибка валидации: {e}')
             logger.info(f'Ошибка валидации: {e}')
 
-
+    @allure.step('Удаление пользователя.')
     def delete_user(self, user_id, expected_status=200):
         delete_user_response = self.send_request(
             method="DELETE",
@@ -102,6 +103,7 @@ class UserAPI(CustomRequester):
             logger.info(f'Ошибка валидации: {e}')
         '''
 
+    @allure.step('Получение админом данных по всем пользователям с фильтрацией по роли пользователя.')
     def get_all_users_filtered_by_role(self, role, expected_status=200):
         get_all_users_filtered_by_role_response = self.send_request(
             method="GET",

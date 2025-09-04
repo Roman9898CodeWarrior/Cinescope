@@ -1,5 +1,6 @@
 from venv import logger
 
+import allure
 import pytest
 from pydantic import ValidationError
 
@@ -13,6 +14,7 @@ class PaymentAPI(CustomRequester):
     def __init__(self, session):
         super().__init__(session, PAYMENT_URL)
 
+    @allure.step('Создание платежа.')
     def create_payment(self, payment_data,  expected_status=201):
         payment_data_validated = {}
 
@@ -31,6 +33,7 @@ class PaymentAPI(CustomRequester):
 
         return create_payment_response.json()
 
+    @allure.step('Создание платежа без валидации данных для объекта платежа.')
     def create_payment_without_payment_data_validation(self, payment_data,  expected_status=201):
         create_payment_response = self.send_request(
             method="POST",
@@ -41,6 +44,7 @@ class PaymentAPI(CustomRequester):
 
         return create_payment_response.json()
 
+    @allure.step('Получение платежей пользователя самим пользователем.')
     def get_user_payments(self, expected_status=200):
         get_user_payments_response = self.send_request(
             method="GET",
@@ -58,6 +62,7 @@ class PaymentAPI(CustomRequester):
                 pytest.fail(f'Ошибка валидации: {e}')
                 logger.info(f'Ошибка валидации: {e}')
 
+    @allure.step('Получение платежей другого пользователя админом.')
     def get_another_user_payments_as_admin(self, user_id, expected_status=200):
         get_another_user_payments_as_admin_response = self.send_request(
             method="GET",
@@ -76,6 +81,7 @@ class PaymentAPI(CustomRequester):
                 pytest.fail(f'Ошибка валидации: {e}')
                 logger.info(f'Ошибка валидации: {e}')
 
+    @allure.step('Получение платежей всех пользователей админом.')
     def get_all_payments_by_admin(self, params=None, expected_status=200):
         get_all_payments_by_admin_response = self.send_request(
             method="GET",

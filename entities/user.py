@@ -23,7 +23,6 @@ class CommonUser:
 
     @property
     def creds(self):
-        """Возвращает кортеж (email, password)"""
         return self.email, self.password
 
 class AdminUser:
@@ -35,7 +34,6 @@ class AdminUser:
 
     @property
     def creds(self):
-        """Возвращает кортеж (email, password)"""
         return {
                 "email": self.email,
                 "password": self.password

@@ -1,4 +1,6 @@
 import json
+
+import allure
 import requests
 import logging
 import os
@@ -19,6 +21,7 @@ class CustomRequester:
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.INFO)
 
+
     def send_request(self, method, endpoint, data=None, expected_status=200, params=None, need_logging=True):
         url = f"{self.base_url}{endpoint}"
         response = self.session.request(method, url, json=data, headers=self.headers, params=params, verify=False)
@@ -28,12 +31,6 @@ class CustomRequester:
             raise ValueError(f"Unexpected status code: {response.status_code}. Expected: {expected_status}")
         return response
 
-    @staticmethod
-    def get_request_body(response: requests.Response):
-        if response is None or response.request is None:
-            return None
-        request_body_string = response.request.body.decode('utf-8')
-        return json.loads(request_body_string)
 
     def _update_session_headers(self, **kwargs):
         self.headers.update(kwargs)

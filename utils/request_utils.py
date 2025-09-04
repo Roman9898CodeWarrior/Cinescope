@@ -1,8 +1,11 @@
 import json
+
+import allure
 import requests
 
 class RequestUtils:
     @staticmethod
+    @allure.step('Получение тела запроса из ответа.')
     def get_request_body(response: requests.Response):
         if response is None or response.request is None:
             return None

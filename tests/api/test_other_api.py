@@ -23,40 +23,6 @@ class TestsDB:
         except ValueError:
             raise ValueError("Недостаточно средств на счете.")
 
-    '''
-    def test_accounts_transaction_template_positive(self, db_session: Session):
-        jack = AccountTransactionTemplate(user=f"Jack_{DataGenerator.generate_random_int()}", balance=8000)
-        troy = AccountTransactionTemplate(user=f"Troy_{DataGenerator.generate_random_int()}", balance=5000)
-
-        amount = 3000
-
-        db_session.add_all([jack, troy])
-        db_session.commit()
-
-        assert jack.balance == 8000
-        assert troy.balance == 5000
-
-        try:
-            self.transfer_money(db_session, from_account=jack.user, to_account=troy.user, amount=3000)
-            assert jack.balance == 5000
-            assert troy.balance == 8000
-        except Exception as e:
-            #db_session.rollback()
-            assert jack.balance == 8000
-            assert troy.balance == 5000
-            pytest.fail(f"Ошибка при переводе денег: {e}")
-        finally:
-            db_session.delete(jack)
-            db_session.delete(troy)
-            db_session.commit()
-
-            assert db_session.query(AccountTransactionTemplate).filter_by(user=jack.user).count() == 0
-            assert db_session.query(AccountTransactionTemplate).filter_by(user=troy.user).count() == 0
-
-            #assert jack.balance == 8000
-            #assert troy.balance == 5000
-    '''
-
 
     def test_accounts_transaction_template_positive(self, db_session: Session):
         jack_initial_balance = 8000
@@ -133,6 +99,10 @@ class TestsDB:
         finally:
             assert db_session.query(AccountTransactionTemplate).filter_by(user=jack.user).count() == 0
             assert db_session.query(AccountTransactionTemplate).filter_by(user=troy.user).count() == 0
+
+
+
+
 
     def test_user_delete(self, db_session: Session):
         movie = Movie(

@@ -1,5 +1,6 @@
 from venv import logger
 
+import allure
 import pytest
 from pydantic import ValidationError
 
@@ -15,6 +16,8 @@ class AuthAPI(CustomRequester):
     def __init__(self, session):
         super().__init__(session, AUTH_URL)
 
+
+    @allure.step("Аутентификация.")
     def authenticate(self, registered_user_data, expected_status=200):
         login_data = {}
 
@@ -47,6 +50,7 @@ class AuthAPI(CustomRequester):
             except ValidationError as e:
                 pytest.fail(f'Ошибка валидации: {e}')
                 logger.info(f'Ошибка валидации: {e}')
+
 
     def height_order_authenticate_function(self, registered_user_data, expected_status=200):
         def _height_order_authenticate_function():
@@ -84,6 +88,8 @@ class AuthAPI(CustomRequester):
 
         return _height_order_authenticate_function
 
+
+    @allure.step("Регистрация пользователя.")
     def register_user(self, test_user_data, expected_status=201):
         test_user_data_validated = {}
 
@@ -111,7 +117,7 @@ class AuthAPI(CustomRequester):
                 logger.info(f'Ошибка валидации: {e}')
 
 
-
+    @allure.step("Логаут.")
     def logout(self, expected_status=200):
         self.send_request(
             method="GET",
@@ -119,6 +125,7 @@ class AuthAPI(CustomRequester):
             expected_status=expected_status
         )
 
+    @allure.step("Обновление токена.")
     def refresh_tokens(self, expected_status=200):
         refresh_tokens_response = self.send_request(
             method="GET",
