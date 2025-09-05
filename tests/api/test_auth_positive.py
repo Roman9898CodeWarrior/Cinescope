@@ -15,7 +15,7 @@ class TestAuthAPIPositive:
     @pytest.mark.smoke
     @allure.tag("smoke", "regression")
     @allure.label("owner", "Roman")
-    @allure.feature("Функционал регистрации пользователя.")
+    @allure.feature("Функционал работы с пользователем.")
     @allure.step('Тест на успешную регистрацию пользователя.')
     def test_register_user(self, api_manager, fixture_user_data_for_registration_validated, super_admin, db_session):
         test_user_data = fixture_user_data_for_registration_validated()
