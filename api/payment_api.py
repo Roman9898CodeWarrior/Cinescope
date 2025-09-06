@@ -16,8 +16,6 @@ class PaymentAPI(CustomRequester):
 
     @allure.step('Создание платежа.')
     def create_payment(self, payment_data,  expected_status=201):
-        payment_data_validated = {}
-
         try:
             payment_data_validated = vars(DataForPaymentCreation(**payment_data))
         except ValidationError as e:

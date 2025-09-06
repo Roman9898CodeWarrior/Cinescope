@@ -92,18 +92,18 @@ def payment_requester():
 
 @pytest.fixture
 def user_session():
-    user_pool = []
+    user_sessions = []
 
     def _create_user_session():
         session = requests.Session()
         user_session = ApiManager(session)
-        user_pool.append(user_session)
+        user_sessions.append(user_session)
         return user_session
 
     yield _create_user_session
 
-    for user in user_pool:
-        user.close_session()
+    for session in user_sessions:
+        session.close_session()
 
 
 @pytest.fixture
@@ -128,23 +128,21 @@ def common_user_registered(user_session, api_manager, fixture_user_data_for_regi
         new_session = user_session()
         user_data_for_creation_registration = fixture_user_data_for_registration_validated()
 
-        register_common_user_response_validated = {}
-
         try:
-            register_common_user_response_validated = RegisterCreateGetOrDeleteUserResponse(**api_manager.auth_api.register_user(user_data_for_creation_registration))
+            register_common_user_response_validated = api_manager.auth_api.register_user(user_data_for_creation_registration)
         except ValidationError as e:
-            print(e)
+            pytest.fail(f'Ошибка валидации: {e}')
             logger.info(f'Ошибка валидации: {e}')
 
         common_user_registered = CommonUser(
-            user_data_for_creation_registration['email'],
+            register_common_user_response_validated['email'],
             user_data_for_creation_registration['password'],
-            user_data_for_creation_registration['fullName'],
-            register_common_user_response_validated.id,
-            register_common_user_response_validated.roles,
-            register_common_user_response_validated.createdAt,
-            register_common_user_response_validated.verified,
-            register_common_user_response_validated.banned,
+            register_common_user_response_validated['fullName'],
+            register_common_user_response_validated['id'],
+            register_common_user_response_validated['roles'],
+            register_common_user_response_validated['createdAt'],
+            register_common_user_response_validated['verified'],
+            register_common_user_response_validated['banned'],
             new_session
         )
 
@@ -165,23 +163,21 @@ def common_user_created(user_session, super_admin, fixture_user_for_creation):
         new_session = user_session()
         user_data_for_creation = fixture_user_for_creation()
 
-        created_common_user_response_validated = {}
-
         try:
-            created_common_user_response_validated = RegisterCreateGetOrDeleteUserResponse(**super_admin.api.user_api.create_user_as_admin(user_data_for_creation))
+            created_common_user_response_validated = super_admin.api.user_api.create_user_as_admin(user_data_for_creation)
         except ValidationError as e:
             pytest.fail(f'Ошибка валидации: {e}')
             logger.info(f'Ошибка валидации: {e}')
 
         common_user_created = CommonUser(
-            user_data_for_creation['email'],
+            created_common_user_response_validated['email'],
             user_data_for_creation['password'],
-            user_data_for_creation['fullName'],
-            created_common_user_response_validated.id,
-            created_common_user_response_validated.roles,
-            created_common_user_response_validated.createdAt,
-            user_data_for_creation['verified'],
-            user_data_for_creation['banned'],
+            created_common_user_response_validated['fullName'],
+            created_common_user_response_validated['id'],
+            created_common_user_response_validated['roles'],
+            created_common_user_response_validated['createdAt'],
+            created_common_user_response_validated['verified'],
+            created_common_user_response_validated['banned'],
             new_session
         )
 
@@ -201,23 +197,21 @@ def common_user_created_without_deleting_user_after_test(user_session, super_adm
     new_session = user_session()
     user_data_for_creation = fixture_user_for_creation()
 
-    created_common_user_response_validated = {}
-
     try:
-        created_common_user_response_validated = RegisterCreateGetOrDeleteUserResponse(**super_admin.api.user_api.create_user_as_admin(user_data_for_creation))
+        created_common_user_response_validated = super_admin.api.user_api.create_user_as_admin(user_data_for_creation)
     except ValidationError as e:
         pytest.fail(f'Ошибка валидации: {e}')
         logger.info(f'Ошибка валидации: {e}')
 
     common_user_created = CommonUser(
-        user_data_for_creation['email'],
+        created_common_user_response_validated['email'],
         user_data_for_creation['password'],
-        user_data_for_creation['fullName'],
-        created_common_user_response_validated.id,
-        created_common_user_response_validated.roles,
-        created_common_user_response_validated.createdAt,
-        user_data_for_creation['verified'],
-        user_data_for_creation['banned'],
+        created_common_user_response_validated['fullName'],
+        created_common_user_response_validated['id'],
+        created_common_user_response_validated['roles'],
+        created_common_user_response_validated['createdAt'],
+        created_common_user_response_validated['verified'],
+        created_common_user_response_validated['banned'],
         new_session
     )
 

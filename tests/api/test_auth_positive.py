@@ -16,7 +16,7 @@ class TestAuthAPIPositive:
     @allure.tag("smoke", "regression")
     @allure.label("owner", "Roman")
     @allure.feature("Функционал работы с пользователем.")
-    @allure.step('Тест на успешную регистрацию пользователя.')
+    @allure.title('Тест на успешную регистрацию пользователя.')
     def test_register_user(self, api_manager, fixture_user_data_for_registration_validated, super_admin, db_session):
         test_user_data = fixture_user_data_for_registration_validated()
 
@@ -51,12 +51,11 @@ class TestAuthAPIPositive:
 
         super_admin.api.user_api.delete_user(register_user_response['id'])
 
-
+    @pytest.mark.smoke
     @allure.tag("smoke", "regression")
     @allure.label("owner", "Roman")
     @allure.feature("Функционал аутентификации пользователя.")
-    @allure.step('Тест на успешную аутентификацию пользователя.')
-    @pytest.mark.smoke
+    @allure.title('Тест на успешную аутентификацию пользователя.')
     def test_login_as_user(self, api_manager, fixture_register_user_response, super_admin):
         registered_user_creds_data = RequestUtils.get_request_body(fixture_register_user_response)
         login_as_user_response = api_manager.auth_api.authenticate(registered_user_creds_data)
@@ -85,12 +84,11 @@ class TestAuthAPIPositive:
 
     '''
 
-
+    @pytest.mark.smoke
     @allure.tag("smoke", "regression")
     @allure.label("owner", "Roman")
     @allure.feature("Функционал аутентификации пользователя.")
-    @allure.step('Тест на успешный выход пользователя из своего аккаунта.')
-    @pytest.mark.smoke
+    @allure.title('Тест на успешный выход пользователя из своего аккаунта.')
     def test_logout_as_user(self, common_user_registered, super_admin):
         #\assert api_manager.session.headers['Authorization'] == f"Bearer {login_as_user_response['accessToken']}"
         assert common_user_registered.api.session.cookies['refresh_token'] == common_user_registered.refreshToken.get('refreshToken')
@@ -121,7 +119,7 @@ class TestAuthAPIPositive:
     @allure.tag("smoke", "regression")
     @allure.label("owner", "Roman")
     @allure.feature("Функционал аутентификации пользователя.")
-    @allure.step('Тест на успешное обновление токена обновления пользователя.')
+    @allure.title('Тест на успешное обновление токена обновления пользователя.')
     def test_refresh_tokens(self, common_user_registered, super_admin):
         #initial_access_token = common_user_registered.api.session.headers['Authorization']
         initial_refresh_token = common_user_registered.api.session.cookies['refresh_token']
@@ -140,6 +138,7 @@ class TestAuthAPIPositive:
     @allure.tag("smoke", "regression")
     @allure.label("owner", "Roman")
     @allure.feature("Функционал аутентификации пользователя.")
+    @allure.title('Тест на аутентификацию с учеткой админа.')
     def test_login_as_admin(self, api_manager):
         login_as_admin_response = api_manager.auth_api.authenticate(UserData.get_admin_creds_for_authentication())
 
@@ -155,6 +154,7 @@ class TestAuthAPIPositive:
     @allure.tag("smoke", "regression")
     @allure.label("owner", "Roman")
     @allure.feature("Функционал работы с пользователем.")
+    @allure.title('Тест на удаление пользователя.')
     def test_delete_user(self, common_user_created_without_deleting_user_after_test, super_admin):
         #user_data = vars(common_user_created_without_deleting_user_after_test)
         delete_user_response = common_user_created_without_deleting_user_after_test.api.user_api.delete_user(common_user_created_without_deleting_user_after_test.id)
@@ -167,6 +167,7 @@ class TestAuthAPIPositive:
     @allure.tag("smoke", "regression")
     @allure.label("owner", "Roman")
     @allure.feature("Функционал работы с пользователем.")
+    @allure.title('Тест на создание пользователя админом.')
     def test_create_user_as_admin(self, super_admin, fixture_user_data_for_creation_by_admin):
         fixture_user_data_for_creation_by_admin = fixture_user_data_for_creation_by_admin()
         create_user_response = super_admin.api.user_api.create_user_as_admin(fixture_user_data_for_creation_by_admin)
@@ -197,6 +198,7 @@ class TestAuthAPIPositive:
     @allure.tag("smoke", "regression")
     @allure.label("owner", "Roman")
     @allure.feature("Функционал работы с пользователем.")
+    @allure.title('Тест на изменение данных пользователя админом.')
     def test_change_user_as_admin(self, super_admin, fixture_user_data_for_creation_by_admin,
                                   fixture_test_user_created_by_admin_changed_data):
         fixture_user_data_for_creation_by_admin = fixture_user_data_for_creation_by_admin()
@@ -231,6 +233,7 @@ class TestAuthAPIPositive:
     @allure.tag("smoke", "regression")
     @allure.label("owner", "Roman")
     @allure.feature("Функционал работы с пользователем.")
+    @allure.title('Тест на получение данных всех пользователей с фильтрацией по роли.')
     def test_get_all_users_filtered_by_role(self, super_admin):
         role = Roles.ADMIN.value
 

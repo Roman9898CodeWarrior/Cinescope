@@ -19,8 +19,6 @@ class AuthAPI(CustomRequester):
 
     @allure.step("Аутентификация.")
     def authenticate(self, registered_user_data, expected_status=200):
-        login_data = {}
-
         try:
             login_data = vars(
                 UserDataForLoggingIn(
@@ -54,8 +52,6 @@ class AuthAPI(CustomRequester):
 
     def height_order_authenticate_function(self, registered_user_data, expected_status=200):
         def _height_order_authenticate_function():
-            login_data = {}
-
             try:
                 login_data = vars(
                     UserDataForLoggingIn(
@@ -91,8 +87,6 @@ class AuthAPI(CustomRequester):
 
     @allure.step("Регистрация пользователя.")
     def register_user(self, test_user_data, expected_status=201):
-        test_user_data_validated = {}
-
         try:
             test_user_data_validated = vars(UserDataForRegistration(**test_user_data))
         except ValidationError as e:

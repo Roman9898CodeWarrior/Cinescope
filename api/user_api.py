@@ -41,8 +41,6 @@ class UserAPI(CustomRequester):
 
     @allure.step('Создание пользователя админом.')
     def create_user_as_admin(self, user_data_for_creation_by_admin, expected_status=201):
-        user_data_for_creation = {}
-
         try:
             user_data_for_creation = vars(UserDataForCreationByAdmin(**user_data_for_creation_by_admin))
         except ValidationError as e:
