@@ -1,5 +1,5 @@
 from constants.roles import Roles
-from resources.user_creds import SuperAdminCreds
+from resources.creds import SuperAdminCreds
 from utils.data_generator import DataGenerator
 
 

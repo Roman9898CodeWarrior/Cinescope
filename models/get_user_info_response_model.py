@@ -1,5 +1,4 @@
-from datetime import datetime
-from typing import List
+import datetime
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -31,7 +30,7 @@ class RegisterCreateGetOrDeleteUserResponse(BaseModel):
     @field_validator("createdAt")
     def validate_created_at(cls, value: str) -> str:
         try:
-            datetime.fromisoformat(value)
+            datetime.datetime.fromisoformat(value)
         except ValueError:
             raise ValueError("Некорректный формат даты и времени")
         return value
@@ -61,7 +60,7 @@ class ChangeUserResponse(BaseModel):
     @field_validator("createdAt")
     def validate_created_at(cls, value: str) -> str:
         try:
-            datetime.fromisoformat(value)
+            datetime.datetime.fromisoformat(value)
         except ValueError:
             raise ValueError("Некорректный формат даты и времени")
         return value

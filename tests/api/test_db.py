@@ -2,10 +2,10 @@ from datetime import datetime
 from venv import logger
 
 import pytest
-from sqlalchemy.dialects.mysql import DATETIME
 from sqlalchemy.orm import Session
 
-from models.account_transaction_template import AccountTransactionTemplate, Movie
+from models.db_models.account_transaction_template_model import AccountTransactionTemplate
+from models.db_models.movies_template_model import Movies
 from utils.data_generator import DataGenerator
 
 class TestsDB:
@@ -101,11 +101,8 @@ class TestsDB:
             assert db_session.query(AccountTransactionTemplate).filter_by(user=troy.user).count() == 0
 
 
-
-
-
     def test_user_delete(self, db_session: Session):
-        movie = Movie(
+        movie = Movies(
             id = 123456,
             name= 'TestMovie',
             price = 260,
@@ -121,7 +118,7 @@ class TestsDB:
         db_session.add(movie)
         db_session.commit()
 
-        movie_in_db = db_session.query(Movie).filter_by(id=movie.id)
+        movie_in_db = db_session.query(Movies).filter_by(id=movie.id)
 
         assert movie_in_db.count() == 1
 

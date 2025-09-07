@@ -6,47 +6,34 @@ import allure
 import requests
 import pytest
 from pydantic import ValidationError
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import Session
 
 from api.api_manager import ApiManager
 from constants.roles import Roles
 from data.payment_data import PaymentData
 from data.user_data import UserData
+from db_requester.db_client import get_db_session
 from entities.user import CommonUser
 from entities.user import AdminUser
-from models.login_user_response_model import LogInResponse
 from models.payment_data_model import DataForPaymentCreation
 from models.get_user_info_response_model import RegisterCreateGetOrDeleteUserResponse
-from models.user_data_model import UserDataForRegistration, UserDataForCreationByAdmin, UserDataForLoggingIn, \
-    UserDBModel
-from resources.user_creds import SuperAdminCreds, DBCreds
+from models.user_data_model import UserDataForRegistration, UserDataForCreationByAdmin, UserDBModel
+from resources.creds import SuperAdminCreds
 from utils.data_generator import DataGenerator
 from faker import Faker
-from constants.constants import REGISTER_ENDPOINT, HOST, PORT, DATABASE_NAME
 from utils.request_utils import RequestUtils
 
 faker = Faker()
 
-HOST = HOST
-PORT = PORT
-DATABASE_NAME = DATABASE_NAME
-USERNAME = DBCreds.USERNAME
-PASSWORD = DBCreds.PASSWORD
-
-engine = create_engine(f"postgresql+psycopg2://{USERNAME}:{PASSWORD}@{HOST}:{PORT}/{DATABASE_NAME}")
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
 @pytest.fixture(scope="module")
 def db_session():
-    db_session = SessionLocal()
+    db_session = get_db_session()
     yield db_session
-
     db_session.close()
 
 @pytest.fixture(scope="module")
 def db_session_with_adding_new_user_to_db():
-    session = SessionLocal()
+    session = get_db_session()
 
     test_user = UserDBModel(
         id="test_id",

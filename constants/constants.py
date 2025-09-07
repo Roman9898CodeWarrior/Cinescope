@@ -7,10 +7,6 @@ HEADERS = {
     "Accept": "application/json"
 }
 
-HOST = "80.90.191.123"
-PORT = 31200
-DATABASE_NAME = "db_movies"
-
 REGISTER_ENDPOINT = "register"
 LOGIN_ENDPOINT = "login"
 LOGOUT_ENDPOINT = 'logout'
