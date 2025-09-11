@@ -5,19 +5,18 @@ import requests
 import logging
 import os
 
+from constants.constants import HEADERS
+
+
 class CustomRequester:
     """
     Кастомный реквестер для стандартизации и упрощения отправки HTTP-запросов.
     """
-    base_headers = {
-        "Content-Type": "application/json",
-        "Accept": "application/json"
-    }
 
     def __init__(self, session, base_url):
         self.session = session
         self.base_url = base_url
-        self.headers = self.base_headers.copy()
+        self.headers = HEADERS
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.INFO)
 

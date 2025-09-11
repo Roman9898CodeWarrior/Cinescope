@@ -46,6 +46,14 @@ class DataGenerator:
         return faker.random_int(1, 25000)
 
     @staticmethod
+    def get_random_first_name():
+        return faker.first_name()
+
+    @staticmethod
+    def get_random_last_name():
+        return faker.first_name()
+
+    @staticmethod
     def generate_random_name():
         return f"{faker.first_name()} {faker.last_name()}"
 
@@ -93,3 +101,7 @@ class DataGenerator:
         random.shuffle(password)
 
         return ''.join(password)
+
+    @staticmethod
+    def get_valid_phone_number():
+        return faker.msisdn()

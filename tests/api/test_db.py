@@ -4,14 +4,16 @@ from venv import logger
 import pytest
 from sqlalchemy.orm import Session
 
-from models.db_models.account_transaction_template_model import AccountTransactionTemplate
-from models.db_models.movies_template_model import Movies
+from models.db_tests_models.account_transaction_template_model import AccountTransactionTemplate
+from models.db_tests_models.movies_template_model import Movies
 from utils.data_generator import DataGenerator
 
 class TestsDB:
     def transfer_money(self, session, from_account, to_account, amount):
         from_account = session.query(AccountTransactionTemplate).filter_by(user=from_account).one()
         to_account = session.query(AccountTransactionTemplate).filter_by(user=to_account).one()
+
+        print(vars(to_account))
 
         try:
             if from_account.balance >= amount:

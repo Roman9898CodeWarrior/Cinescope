@@ -1,8 +1,5 @@
 from datetime import datetime
 
-from models.get_user_payments_response_model import UserPaymentsResponse
-from utils.request_utils import RequestUtils
-
 
 class TestPaymentAPIPositive:
     def test_create_payment(self, fixture_payment, common_user_registered, super_admin):

@@ -6,8 +6,8 @@ from pydantic import ValidationError
 
 from constants.constants import PAYMENT_URL, CREATE_PAYMENT_ENDPOINT, USER_ENDPOINT, FIND_ALL_PAYMENTS_ENDPOINT
 from custom_requester.custom_requester import CustomRequester
-from models.get_user_payments_response_model import UserPaymentsResponse
-from models.payment_data_model import DataForPaymentCreation
+from models.api_models.get_user_payments_response_model import UserPaymentsResponseModel
+from models.api_models.payment_data_model import DataForPaymentCreationModel
 
 
 class PaymentAPI(CustomRequester):
@@ -17,7 +17,7 @@ class PaymentAPI(CustomRequester):
     @allure.step('Создание платежа.')
     def create_payment(self, payment_data,  expected_status=201):
         try:
-            payment_data_validated = vars(DataForPaymentCreation(**payment_data))
+            payment_data_validated = vars(DataForPaymentCreationModel(**payment_data))
         except ValidationError as e:
             pytest.fail(f'Ошибка валидации: {e}')
             logger.info(f'Ошибка валидации: {e}')
@@ -54,7 +54,7 @@ class PaymentAPI(CustomRequester):
             return get_user_payments_response
         else:
             try:
-                get_user_payments_response_validated = vars(UserPaymentsResponse.model_validate(get_user_payments_response.json()))
+                get_user_payments_response_validated = vars(UserPaymentsResponseModel.model_validate(get_user_payments_response.json()))
                 return get_user_payments_response_validated
             except ValidationError as e:
                 pytest.fail(f'Ошибка валидации: {e}')
@@ -73,7 +73,7 @@ class PaymentAPI(CustomRequester):
         else:
             try:
                 get_another_user_payments_as_admin_response = vars(
-                    UserPaymentsResponse.model_validate(get_another_user_payments_as_admin_response.json()))
+                    UserPaymentsResponseModel.model_validate(get_another_user_payments_as_admin_response.json()))
                 return get_another_user_payments_as_admin_response
             except ValidationError as e:
                 pytest.fail(f'Ошибка валидации: {e}')

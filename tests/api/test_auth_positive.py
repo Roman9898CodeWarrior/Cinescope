@@ -1,13 +1,10 @@
-import datetime
 from datetime import date
 
 import allure
 import pytest
 
-from constants.constants import USER_ENDPOINT
 from constants.roles import Roles
-from data.user_data import UserData
-from models.user_data_model import UserDBModel
+from data.api_tests_data.user_data import UserData
 from utils.request_utils import RequestUtils
 
 
@@ -17,15 +14,15 @@ class TestAuthAPIPositive:
     @allure.label("owner", "Roman")
     @allure.feature("Функционал работы с пользователем.")
     @allure.title('Тест на успешную регистрацию пользователя.')
-    def test_register_user(self, api_manager, fixture_user_data_for_registration_validated, super_admin, db_session):
-        test_user_data = fixture_user_data_for_registration_validated()
+    def test_register_user(self, api_manager, fixture_data_for_user_registration, super_admin, db_session):
+        #test_user_data = fixture_user_data_for_registration_validated()
 
-        register_user_response = api_manager.auth_api.register_user(test_user_data)
+        register_user_response = api_manager.auth_api.register_user(fixture_data_for_user_registration)
 
         assert "id" in register_user_response, "ID пользователя отсутствует в ответе."
-        assert register_user_response['email'] == test_user_data['email'], "Email не совпадает."
-        assert register_user_response["fullName"] == test_user_data["fullName"], "Имя и фамилия не совпадает."
-        assert register_user_response["roles"] == test_user_data['roles'], 'Роль USER не присвоена зарегистрированному пользователю.'
+        assert register_user_response['email'] == fixture_data_for_user_registration['email'], "Email не совпадает."
+        assert register_user_response["fullName"] == fixture_data_for_user_registration["fullName"], "Имя и фамилия не совпадает."
+        assert register_user_response["roles"] == fixture_data_for_user_registration['roles'], 'Роль USER не присвоена зарегистрированному пользователю.'
         assert register_user_response['verified'] == True, 'Зарегистрированный пользователь не верефицирован.'
         assert register_user_response['banned'] == False, 'Зарегистрированный пользователь забанен.'
         assert date.today().strftime('%Y-%m-%d') in register_user_response['createdAt'], 'Дата регистрации пользователя не корректна.'
@@ -168,27 +165,27 @@ class TestAuthAPIPositive:
     @allure.label("owner", "Roman")
     @allure.feature("Функционал работы с пользователем.")
     @allure.title('Тест на создание пользователя админом.')
-    def test_create_user_as_admin(self, super_admin, fixture_user_data_for_creation_by_admin):
-        fixture_user_data_for_creation_by_admin = fixture_user_data_for_creation_by_admin()
-        create_user_response = super_admin.api.user_api.create_user_as_admin(fixture_user_data_for_creation_by_admin)
+    def test_create_user_as_admin(self, super_admin, fixture_data_for_user_creation_by_admin):
+        fixture_data_for_user_creation_by_admin = fixture_data_for_user_creation_by_admin()
+        create_user_response = super_admin.api.user_api.create_user_as_admin(fixture_data_for_user_creation_by_admin)
 
         assert 'id' in create_user_response, "ID пользователя отсутствует в ответе."
-        assert create_user_response["email"] == fixture_user_data_for_creation_by_admin["email"], "Email не совпадает."
-        assert create_user_response["fullName"] == fixture_user_data_for_creation_by_admin["fullName"], "Имя и фамилия не совпадает."
+        assert create_user_response["email"] == fixture_data_for_user_creation_by_admin["email"], "Email не совпадает."
+        assert create_user_response["fullName"] == fixture_data_for_user_creation_by_admin["fullName"], "Имя и фамилия не совпадает."
         assert create_user_response["roles"] == ['USER'], 'Роль USER не присвоена зарегистрированному пользователю.'
-        assert create_user_response['verified'] == fixture_user_data_for_creation_by_admin["verified"], 'Зарегистрированный пользователь не верефицирован.'
-        assert create_user_response['banned'] == fixture_user_data_for_creation_by_admin["banned"], 'Зарегистрированный пользователь забанен.'
+        assert create_user_response['verified'] == fixture_data_for_user_creation_by_admin["verified"], 'Зарегистрированный пользователь не верефицирован.'
+        assert create_user_response['banned'] == fixture_data_for_user_creation_by_admin["banned"], 'Зарегистрированный пользователь забанен.'
         assert date.today().strftime('%Y-%m-%d') in create_user_response[
             'createdAt'], 'Дата регистрации пользователя не корректна.'
 
         get_created_user_response = super_admin.api.user_api.get_user_info(create_user_response)
 
         assert get_created_user_response['id'] == create_user_response['id'], 'ID пользователя не корректное.'
-        assert get_created_user_response["email"] == fixture_user_data_for_creation_by_admin["email"], "Email не совпадает."
-        assert get_created_user_response["fullName"] == fixture_user_data_for_creation_by_admin["fullName"], "Имя и фамилия не совпадает."
+        assert get_created_user_response["email"] == fixture_data_for_user_creation_by_admin["email"], "Email не совпадает."
+        assert get_created_user_response["fullName"] == fixture_data_for_user_creation_by_admin["fullName"], "Имя и фамилия не совпадает."
         assert get_created_user_response["roles"] == ['USER'], 'Роль USER не присвоена зарегистрированному пользователю.'
-        assert get_created_user_response['verified'] == fixture_user_data_for_creation_by_admin["verified"], 'Зарегистрированный пользователь не верефицирован.'
-        assert get_created_user_response['banned'] == fixture_user_data_for_creation_by_admin["banned"], 'Зарегистрированный пользователь забанен.'
+        assert get_created_user_response['verified'] == fixture_data_for_user_creation_by_admin["verified"], 'Зарегистрированный пользователь не верефицирован.'
+        assert get_created_user_response['banned'] == fixture_data_for_user_creation_by_admin["banned"], 'Зарегистрированный пользователь забанен.'
         assert date.today().strftime('%Y-%m-%d') in get_created_user_response[
             'createdAt'], 'Дата регистрации пользователя не корректна.'
 
@@ -199,13 +196,13 @@ class TestAuthAPIPositive:
     @allure.label("owner", "Roman")
     @allure.feature("Функционал работы с пользователем.")
     @allure.title('Тест на изменение данных пользователя админом.')
-    def test_change_user_as_admin(self, super_admin, fixture_user_data_for_creation_by_admin,
+    def test_change_user_as_admin(self, super_admin, fixture_data_for_user_creation_by_admin,
                                   fixture_test_user_created_by_admin_changed_data):
-        fixture_user_data_for_creation_by_admin = fixture_user_data_for_creation_by_admin()
+        fixture_data_for_user_creation_by_admin = fixture_data_for_user_creation_by_admin()
 
-        create_user_response = super_admin.api.user_api.create_user_as_admin(fixture_user_data_for_creation_by_admin)
+        create_user_response = super_admin.api.user_api.create_user_as_admin(fixture_data_for_user_creation_by_admin)
 
-        change_user_response = super_admin.api.user_api.change_user_as_admin(create_user_response, fixture_test_user_created_by_admin_changed_data)
+        change_user_response = super_admin.api.user_api.change_user_data_as_admin(create_user_response, fixture_test_user_created_by_admin_changed_data)
 
         assert change_user_response["email"] == fixture_test_user_created_by_admin_changed_data["email"], "Email не совпадает"
         assert change_user_response["banned"] == fixture_test_user_created_by_admin_changed_data["banned"], "Забенен ли пользователь не совпадает"
