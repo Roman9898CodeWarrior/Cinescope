@@ -6,8 +6,8 @@ from pydantic import ValidationError
 
 from constants.constants import PAYMENT_URL, CREATE_PAYMENT_ENDPOINT, USER_ENDPOINT, FIND_ALL_PAYMENTS_ENDPOINT
 from custom_requester.custom_requester import CustomRequester
-from models.api_models.get_user_payments_response_model import UserPaymentsResponseModel
-from models.api_models.payment_data_model import DataForPaymentCreationModel
+from models.api_tests_models.get_user_payments_response_model import UserPaymentsResponseModel
+from models.api_tests_models.payment_data_model import DataForPaymentCreationModel
 
 
 class PaymentAPI(CustomRequester):

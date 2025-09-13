@@ -13,9 +13,9 @@ from data.api_tests_data.user_data import UserData
 from db_requester.db_client import get_db_session
 from entities.user import CommonUser
 from entities.user import AdminUser
-from models.api_models.payment_data_model import DataForPaymentCreationModel
-from models.api_models.get_user_info_response_model import RegisterCreateGetOrDeleteUserResponseModel
-from models.api_models.user_data_model import UserDataForRegistrationModel, UserDBModel
+from models.api_tests_models.payment_data_model import DataForPaymentCreationModel
+from models.api_tests_models.get_user_info_response_model import RegisterCreateGetOrDeleteUserResponseModel
+from models.api_tests_models.user_data_model import UserDataForRegistrationModel, UserDBModel
 from resources.creds import SuperAdminCreds
 from utils.data_generator import DataGenerator
 from faker import Faker
@@ -127,7 +127,7 @@ def common_user_registered(user_session, api_manager, fixture_data_for_user_regi
             register_common_user_response_validated['roles'],
             register_common_user_response_validated['createdAt'],
             register_common_user_response_validated['verified'],
-            register_common_user_response_validated['banned'],
+            #register_common_user_response_validated['banned'],
             new_session
         )
 
@@ -162,7 +162,7 @@ def common_user_created(user_session, super_admin, fixture_data_for_user_creatio
             created_common_user_response_validated['roles'],
             created_common_user_response_validated['createdAt'],
             created_common_user_response_validated['verified'],
-            created_common_user_response_validated['banned'],
+            #created_common_user_response_validated['banned'],
             new_session
         )
 
@@ -197,7 +197,7 @@ def common_user_created_without_deleting_user_after_test(user_session, super_adm
         created_common_user_response_validated['roles'],
         created_common_user_response_validated['createdAt'],
         created_common_user_response_validated['verified'],
-        created_common_user_response_validated['banned'],
+        #created_common_user_response_validated['banned'],
         new_session
     )
 

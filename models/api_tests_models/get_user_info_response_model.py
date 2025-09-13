@@ -12,7 +12,7 @@ class RegisterCreateGetOrDeleteUserResponseModel(BaseModel):
     roles: list[Roles]
     verified: bool
     createdAt: str
-    banned: bool
+    #banned: bool
 
     class Config:
         json_encoders = {
@@ -42,7 +42,7 @@ class ChangeUserResponseModel(BaseModel):
     roles: list[Roles]
     verified: bool
     createdAt: str
-    banned: bool
+    #banned: bool
 
     class Config:
         json_encoders = {

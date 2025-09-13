@@ -6,9 +6,9 @@ from pydantic import ValidationError
 
 from constants.constants import USER_ENDPOINT, AUTH_URL
 from custom_requester.custom_requester import CustomRequester
-from models.api_models.get_all_users_response_model import GetAllUsersResponseModel
-from models.api_models.get_user_info_response_model import RegisterCreateGetOrDeleteUserResponseModel, ChangeUserResponseModel
-from models.api_models.user_data_model import UserDataForCreationByAdminModel
+from models.api_tests_models.get_all_users_response_model import GetAllUsersResponseModel
+from models.api_tests_models.get_user_info_response_model import RegisterCreateGetOrDeleteUserResponseModel, ChangeUserResponseModel
+from models.api_tests_models.user_data_model import UserDataForCreationByAdminModel
 
 
 class UserAPI(CustomRequester):

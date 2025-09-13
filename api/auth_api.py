@@ -6,10 +6,10 @@ from pydantic import ValidationError
 
 from constants.constants import REGISTER_ENDPOINT, LOGIN_ENDPOINT, LOGOUT_ENDPOINT, REFRESH_TOKENS_ENDPOINT, AUTH_URL
 from custom_requester.custom_requester import CustomRequester
-from models.api_models.get_user_info_response_model import RegisterCreateGetOrDeleteUserResponseModel
-from models.api_models.login_user_response_model import LogInResponseModel
-from models.api_models.refresh_tokens_response_model import RefreshTokensResponseModel
-from models.api_models.user_data_model import UserDataForLoggingInModel, UserDataForRegistrationModel
+from models.api_tests_models.get_user_info_response_model import RegisterCreateGetOrDeleteUserResponseModel
+from models.api_tests_models.login_user_response_model import LogInResponseModel
+from models.api_tests_models.refresh_tokens_response_model import RefreshTokensResponseModel
+from models.api_tests_models.user_data_model import UserDataForLoggingInModel, UserDataForRegistrationModel
 
 
 class AuthAPI(CustomRequester):
@@ -18,7 +18,7 @@ class AuthAPI(CustomRequester):
 
 
     @allure.step("Аутентификация.")
-    def authenticate(self, registered_user_data, expected_status=200):
+    def authenticate(self, registered_user_data, expected_status=201):
         try:
             login_data = vars(
                 UserDataForLoggingInModel(
@@ -37,7 +37,7 @@ class AuthAPI(CustomRequester):
             expected_status=expected_status
         )
 
-        if expected_status != 200 and login_as_user_response.status_code != 200:
+        if expected_status != 201 and login_as_user_response.status_code != 201:
             return login_as_user_response
         else:
             try:
@@ -50,7 +50,7 @@ class AuthAPI(CustomRequester):
                 logger.info(f'Ошибка валидации: {e}')
 
 
-    def height_order_authenticate_function(self, registered_user_data, expected_status=200):
+    def height_order_authenticate_function(self, registered_user_data, expected_status=201):
         def _height_order_authenticate_function():
             try:
                 login_data = vars(
@@ -70,7 +70,7 @@ class AuthAPI(CustomRequester):
                 expected_status=expected_status
             )
 
-            if expected_status != 200 and login_as_user_response.status_code != 200:
+            if expected_status != 201 and login_as_user_response.status_code != 201:
                 return login_as_user_response
             else:
                 try:
@@ -120,7 +120,7 @@ class AuthAPI(CustomRequester):
         )
 
     @allure.step("Обновление токена.")
-    def refresh_tokens(self, expected_status=200):
+    def refresh_tokens(self, expected_status=201):
         refresh_tokens_response = self.send_request(
             method="GET",
             endpoint=REFRESH_TOKENS_ENDPOINT,

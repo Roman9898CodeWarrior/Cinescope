@@ -52,7 +52,7 @@ class UserData:
 
         return {
             "email": random_email,
-            "banned": True
+            #"banned": True
         }
 
     @staticmethod

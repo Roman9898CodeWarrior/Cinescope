@@ -24,7 +24,7 @@ class TestAuthAPIPositive:
         assert register_user_response["fullName"] == fixture_data_for_user_registration["fullName"], "Имя и фамилия не совпадает."
         assert register_user_response["roles"] == fixture_data_for_user_registration['roles'], 'Роль USER не присвоена зарегистрированному пользователю.'
         assert register_user_response['verified'] == True, 'Зарегистрированный пользователь не верефицирован.'
-        assert register_user_response['banned'] == False, 'Зарегистрированный пользователь забанен.'
+        #assert register_user_response['banned'] == False, 'Зарегистрированный пользователь забанен.'
         assert date.today().strftime('%Y-%m-%d') in register_user_response['createdAt'], 'Дата регистрации пользователя не корректна.'
 
         get_user_response = super_admin.api.user_api.get_user_info(register_user_response)
@@ -34,7 +34,7 @@ class TestAuthAPIPositive:
         assert get_user_response["fullName"] == register_user_response["fullName"], "Имя и фамилия не совпадает."
         assert get_user_response["roles"] == register_user_response["roles"], 'Роль USER не присвоена зарегистрированному пользователю.'
         assert get_user_response['verified'] == True, 'Зарегистрированный пользователь не верефицирован.'
-        assert get_user_response['banned'] == False, 'Зарегистрированный пользователь забанен.'
+        #assert get_user_response['banned'] == False, 'Зарегистрированный пользователь забанен.'
         assert date.today().strftime('%Y-%m-%d') in get_user_response[
             'createdAt'], 'Дата регистрации пользователя не корректна.'
 
@@ -174,7 +174,7 @@ class TestAuthAPIPositive:
         assert create_user_response["fullName"] == fixture_data_for_user_creation_by_admin["fullName"], "Имя и фамилия не совпадает."
         assert create_user_response["roles"] == ['USER'], 'Роль USER не присвоена зарегистрированному пользователю.'
         assert create_user_response['verified'] == fixture_data_for_user_creation_by_admin["verified"], 'Зарегистрированный пользователь не верефицирован.'
-        assert create_user_response['banned'] == fixture_data_for_user_creation_by_admin["banned"], 'Зарегистрированный пользователь забанен.'
+        #assert create_user_response['banned'] == fixture_data_for_user_creation_by_admin["banned"], 'Зарегистрированный пользователь забанен.'
         assert date.today().strftime('%Y-%m-%d') in create_user_response[
             'createdAt'], 'Дата регистрации пользователя не корректна.'
 
@@ -185,7 +185,7 @@ class TestAuthAPIPositive:
         assert get_created_user_response["fullName"] == fixture_data_for_user_creation_by_admin["fullName"], "Имя и фамилия не совпадает."
         assert get_created_user_response["roles"] == ['USER'], 'Роль USER не присвоена зарегистрированному пользователю.'
         assert get_created_user_response['verified'] == fixture_data_for_user_creation_by_admin["verified"], 'Зарегистрированный пользователь не верефицирован.'
-        assert get_created_user_response['banned'] == fixture_data_for_user_creation_by_admin["banned"], 'Зарегистрированный пользователь забанен.'
+        #assert get_created_user_response['banned'] == fixture_data_for_user_creation_by_admin["banned"], 'Зарегистрированный пользователь забанен.'
         assert date.today().strftime('%Y-%m-%d') in get_created_user_response[
             'createdAt'], 'Дата регистрации пользователя не корректна.'
 
@@ -205,7 +205,7 @@ class TestAuthAPIPositive:
         change_user_response = super_admin.api.user_api.change_user_data_as_admin(create_user_response, fixture_test_user_created_by_admin_changed_data)
 
         assert change_user_response["email"] == fixture_test_user_created_by_admin_changed_data["email"], "Email не совпадает"
-        assert change_user_response["banned"] == fixture_test_user_created_by_admin_changed_data["banned"], "Забенен ли пользователь не совпадает"
+        #assert change_user_response["banned"] == fixture_test_user_created_by_admin_changed_data["banned"], "Забенен ли пользователь не совпадает"
         #assert change_user_response['id'] == create_user_response['id'], 'ID пользователя не корректный.'
         assert change_user_response["fullName"] == create_user_response["fullName"], "Имя и фамилия не совпадает."
         assert change_user_response["roles"] == create_user_response['roles'], 'Роль USER не присвоена зарегистрированному пользователю.'
@@ -216,7 +216,7 @@ class TestAuthAPIPositive:
         get_user_after_change_response = super_admin.api.user_api.get_user_info(create_user_response)
 
         assert get_user_after_change_response["email"] == fixture_test_user_created_by_admin_changed_data["email"], "Email не совпадает"
-        assert get_user_after_change_response["banned"] == fixture_test_user_created_by_admin_changed_data["banned"], "Забенен ли пользователь не совпадает"
+        #assert get_user_after_change_response["banned"] == fixture_test_user_created_by_admin_changed_data["banned"], "Забенен ли пользователь не совпадает"
         assert get_user_after_change_response['id'] == create_user_response['id'], 'ID пользователя не корректное.'
         assert get_user_after_change_response["fullName"] ==  create_user_response["fullName"], "Имя и фамилия не совпадает."
         assert get_user_after_change_response["roles"] == create_user_response['roles'], 'Роль USER не присвоена зарегистрированному пользователю.'

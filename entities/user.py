@@ -2,7 +2,7 @@ from api.api_manager import ApiManager
 
 
 class CommonUser:
-    def __init__(self, email: str, password: str, fullname: str, id: str, roles: list, created_at: str, verified: bool, banned: bool, api: ApiManager, access_token: str = None, refresh_token: str = None):
+    def __init__(self, email: str, password: str, fullname: str, id: str, roles: list, created_at: str, verified: bool, api: ApiManager, access_token: str = None, refresh_token: str = None):
         self.email = email
         self.password = password
         self.fullname = fullname
@@ -10,7 +10,7 @@ class CommonUser:
         self.roles = roles
         self.createdAt =created_at
         self.verified = verified
-        self.banned = banned
+        #self.banned = banned
         self.api = api
         self.accessToken = access_token if access_token is not None else {}
         self.refreshToken = refresh_token if refresh_token is not None else {}
