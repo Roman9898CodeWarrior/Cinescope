@@ -32,46 +32,52 @@ class TestAuthAPINegative:
     @allure.feature("Функционал аутентификации пользователя.")
     @allure.title('Тест на неуспешную попытку пользователя залогиниться с некорректной почтой.')
     def test_try_to_login_as_user_with_wrong_email(self, api_manager, fixture_register_user_response, super_admin):
-        registered_user_creds_data = RequestUtils.get_request_body(fixture_register_user_response)
-        registered_user_creds_data['password'] += '!'
+        with allure.step('Из ответа на запрос на регистрацию пользователя получаются данные зарегистрированного пользователя. Затем паролю присваивается лишний символ, чтобы при попытке залогиниться с этими данными получить ошибку 401.'):
+            registered_user_creds_data = RequestUtils.get_request_body(fixture_register_user_response)
+            registered_user_creds_data['password'] += '!'
 
-        try_to_authenticate_response = api_manager.auth_api.authenticate(registered_user_creds_data, 401)
+        with allure.step('Осуществляется попытка залогиниться с некорректным паролем.'):
+            try_to_authenticate_response = api_manager.auth_api.authenticate(registered_user_creds_data, 401)
 
-        assert try_to_authenticate_response.json()['message'] == 'Неверный логин или пароль', "Текст ошибки не корректный."
+            assert try_to_authenticate_response.json()['message'] == 'Неверный логин или пароль', "Текст ошибки не корректный."
 
-        #super_admin.api.user_api.delete_user(fixture_register_user_response.json()['id'])
 
     @allure.feature("Функционал создания пользователя.")
     @allure.title('Тест на неуспешную попытку админа создать нового пользователя с неуникальной почтой.')
     def test_try_to_create_user_with_non_unique_email_as_admin(self, super_admin,
                                                                fixture_data_for_user_creation_by_admin):
-        test_user_created_by_admin_data = fixture_data_for_user_creation_by_admin()
+        with allure.step('Админ создает нового пользователя.'):
+            test_user_created_by_admin_data = fixture_data_for_user_creation_by_admin()
 
-        create_user_response = super_admin.api.user_api.create_user_as_admin(test_user_created_by_admin_data)
+            create_user_response = super_admin.api.user_api.create_user_as_admin(test_user_created_by_admin_data)
 
-        first_user_email = create_user_response['email']
+        with allure.step('Данным для создания нового пользователя присваивается почта уже созданного пользователя.'):
+            first_user_email = create_user_response['email']
 
-        test_user_created_by_admin_2 = fixture_data_for_user_creation_by_admin()
+            test_user_created_by_admin_2 = fixture_data_for_user_creation_by_admin()
 
-        test_user_created_by_admin_2['email'] = first_user_email
+            test_user_created_by_admin_2['email'] = first_user_email
 
-        super_admin.api.user_api.create_user_as_admin(test_user_created_by_admin_2, 409)
+        with allure.step('Отправляется запрос на создание пользователя с неуникальной почтой. Затем созданный на первом шаге пользователь удаляется.'):
+            super_admin.api.user_api.create_user_as_admin(test_user_created_by_admin_2, 409)
 
-        super_admin.api.user_api.delete_user(create_user_response['id'])
+            super_admin.api.user_api.delete_user(create_user_response['id'])
 
     @allure.feature("Функционал изменения данных пользователя.")
     @allure.title('Тест на неуспешную попытку админа изменить данные пользователя некорректными данными.')
     def test_try_to_change_user_as_admin_with_wrong_role(self, super_admin, fixture_data_for_user_creation_by_admin,
                                                          fixture_test_user_created_by_admin_changed_data):
-        test_user_created_by_admin_data = fixture_data_for_user_creation_by_admin()
+        with allure.step('Админ создает нового пользователя.'):
+            test_user_created_by_admin_data = fixture_data_for_user_creation_by_admin()
 
-        create_user_response = super_admin.api.user_api.create_user_as_admin(test_user_created_by_admin_data)
+            create_user_response = super_admin.api.user_api.create_user_as_admin(test_user_created_by_admin_data)
 
-        fixture_test_user_created_by_admin_changed_data['roles'] = ['USEROK']
+        with allure.step('Отправляется запрос на обновление данных пользователя некорректными данными (недопустимой ролью). Затем созданный на первом шаге пользователь удаляется.'):
+            fixture_test_user_created_by_admin_changed_data['roles'] = ['USEROK']
 
-        super_admin.api.user_api.change_user_data_as_admin(create_user_response, fixture_test_user_created_by_admin_changed_data, 400)
+            super_admin.api.user_api.change_user_data_as_admin(create_user_response, fixture_test_user_created_by_admin_changed_data, 400)
 
-        super_admin.api.user_api.delete_user(create_user_response['id'])
+            super_admin.api.user_api.delete_user(create_user_response['id'])
 
 
 

@@ -260,10 +260,9 @@ def fixture_test_user_created_by_admin_changed_data():
 
 
 @pytest.fixture
+#@allure.step('Регистрация пользователя. В ответ получен response, а не тело ответа.')
 def fixture_register_user_response(super_admin, fixture_data_for_user_registration):
     with allure.step('Регистрация пользователя. В ответ получен response, а не тело ответа.'):
-        #test_user_data = fixture_user_data_for_registration_validated()
-
         try:
             test_user_data_validated = vars(UserDataForRegistrationModel(**fixture_data_for_user_registration))
         except ValidationError as e:

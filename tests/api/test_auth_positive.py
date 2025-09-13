@@ -15,38 +15,38 @@ class TestAuthAPIPositive:
     @allure.feature("Функционал работы с пользователем.")
     @allure.title('Тест на успешную регистрацию пользователя.')
     def test_register_user(self, api_manager, fixture_data_for_user_registration, super_admin, db_session):
-        #test_user_data = fixture_user_data_for_registration_validated()
+        with allure.step('Отправляется запрос на регистрацию нового пользователя и данные из ответа проверяются.'):
+            register_user_response = api_manager.auth_api.register_user(fixture_data_for_user_registration)
 
-        register_user_response = api_manager.auth_api.register_user(fixture_data_for_user_registration)
+            assert "id" in register_user_response, "ID пользователя отсутствует в ответе."
+            assert register_user_response['email'] == fixture_data_for_user_registration['email'], "Email не совпадает."
+            assert register_user_response["fullName"] == fixture_data_for_user_registration["fullName"], "Имя и фамилия не совпадает."
+            assert register_user_response["roles"] == fixture_data_for_user_registration['roles'], 'Роль USER не присвоена зарегистрированному пользователю.'
+            assert register_user_response['verified'] == True, 'Зарегистрированный пользователь не верефицирован.'
+            #assert register_user_response['banned'] == False, 'Зарегистрированный пользователь забанен.'
+            assert date.today().strftime('%Y-%m-%d') in register_user_response['createdAt'], 'Дата регистрации пользователя не корректна.'
 
-        assert "id" in register_user_response, "ID пользователя отсутствует в ответе."
-        assert register_user_response['email'] == fixture_data_for_user_registration['email'], "Email не совпадает."
-        assert register_user_response["fullName"] == fixture_data_for_user_registration["fullName"], "Имя и фамилия не совпадает."
-        assert register_user_response["roles"] == fixture_data_for_user_registration['roles'], 'Роль USER не присвоена зарегистрированному пользователю.'
-        assert register_user_response['verified'] == True, 'Зарегистрированный пользователь не верефицирован.'
-        #assert register_user_response['banned'] == False, 'Зарегистрированный пользователь забанен.'
-        assert date.today().strftime('%Y-%m-%d') in register_user_response['createdAt'], 'Дата регистрации пользователя не корректна.'
+        with allure.step('Отправляется запрос на получение данных зарегистрированного пользователя из БД. Данные проверяются. После чего пользователь удаляется из БД.'):
+            get_user_response = super_admin.api.user_api.get_user_info(register_user_response)
 
-        get_user_response = super_admin.api.user_api.get_user_info(register_user_response)
+            assert get_user_response['id'] == register_user_response["id"], 'ID пользователя не корректное.'
+            assert get_user_response["email"] == register_user_response["email"], "Email не совпадает."
+            assert get_user_response["fullName"] == register_user_response["fullName"], "Имя и фамилия не совпадает."
+            assert get_user_response["roles"] == register_user_response["roles"], 'Роль USER не присвоена зарегистрированному пользователю.'
+            assert get_user_response['verified'] == True, 'Зарегистрированный пользователь не верефицирован.'
+            #assert get_user_response['banned'] == False, 'Зарегистрированный пользователь забанен.'
+            assert date.today().strftime('%Y-%m-%d') in get_user_response[
+                'createdAt'], 'Дата регистрации пользователя не корректна.'
 
-        assert get_user_response['id'] == register_user_response["id"], 'ID пользователя не корректное.'
-        assert get_user_response["email"] == register_user_response["email"], "Email не совпадает."
-        assert get_user_response["fullName"] == register_user_response["fullName"], "Имя и фамилия не совпадает."
-        assert get_user_response["roles"] == register_user_response["roles"], 'Роль USER не присвоена зарегистрированному пользователю.'
-        assert get_user_response['verified'] == True, 'Зарегистрированный пользователь не верефицирован.'
-        #assert get_user_response['banned'] == False, 'Зарегистрированный пользователь забанен.'
-        assert date.today().strftime('%Y-%m-%d') in get_user_response[
-            'createdAt'], 'Дата регистрации пользователя не корректна.'
+            '''
+            users_from_db = db_session.query(UserDBModel).filter(UserDBModel.id == register_user_response.id)
+    
+            assert users_from_db.count() == 1, "обьект не попал в базу данных"
+            
+            user_from_db = users_from_db.first()
+            '''
 
-        '''
-        users_from_db = db_session.query(UserDBModel).filter(UserDBModel.id == register_user_response.id)
-
-        assert users_from_db.count() == 1, "обьект не попал в базу данных"
-        
-        user_from_db = users_from_db.first()
-        '''
-
-        super_admin.api.user_api.delete_user(register_user_response['id'])
+            super_admin.api.user_api.delete_user(register_user_response['id'])
 
     @pytest.mark.smoke
     @allure.tag("smoke", "regression")
@@ -54,19 +54,20 @@ class TestAuthAPIPositive:
     @allure.feature("Функционал аутентификации пользователя.")
     @allure.title('Тест на успешную аутентификацию пользователя.')
     def test_login_as_user(self, api_manager, fixture_register_user_response, super_admin):
-        registered_user_creds_data = RequestUtils.get_request_body(fixture_register_user_response)
-        login_as_user_response = api_manager.auth_api.authenticate(registered_user_creds_data)
+        with allure.step('Из ответа на запрос на регистрацию пользователя получаются данные зарегистрированного пользователя.'):
+            registered_user_creds_data = RequestUtils.get_request_body(fixture_register_user_response)
 
-        register_user_response_data = fixture_register_user_response.json()
+        with allure.step('Отправляется запрос на аутентификацию и проверяются данные в ответе.'):
+            login_as_user_response = api_manager.auth_api.authenticate(registered_user_creds_data)
 
-        assert login_as_user_response['user']['id'] == register_user_response_data['id'], 'id пользователя при аутентификации не корректный'
-        assert login_as_user_response['user']["roles"] == register_user_response_data["roles"], 'Роль USER не присвоена зарегистрированному пользователю.'
-        assert 'accessToken' in login_as_user_response, 'В ответе отсутствует токен доступа.'
-        assert 'refreshToken' in login_as_user_response, 'В ответе отсутствует токен обновления.'
-        assert api_manager.session.headers['Authorization'] == f"Bearer {login_as_user_response['accessToken']}"
-        assert api_manager.session.cookies['refresh_token'] == login_as_user_response['refreshToken']
+            register_user_response_data = fixture_register_user_response.json()
 
-        #super_admin.api.user_api.delete_user(register_user_response_data['id'])
+            assert login_as_user_response['user']['id'] == register_user_response_data['id'], 'id пользователя при аутентификации не корректный'
+            assert login_as_user_response['user']["roles"] == register_user_response_data["roles"], 'Роль USER не присвоена зарегистрированному пользователю.'
+            assert 'accessToken' in login_as_user_response, 'В ответе отсутствует токен доступа.'
+            assert 'refreshToken' in login_as_user_response, 'В ответе отсутствует токен обновления.'
+            assert api_manager.session.headers['Authorization'] == f"Bearer {login_as_user_response['accessToken']}"
+            assert api_manager.session.cookies['refresh_token'] == login_as_user_response['refreshToken']
 
 
     '''
@@ -87,15 +88,17 @@ class TestAuthAPIPositive:
     @allure.feature("Функционал аутентификации пользователя.")
     @allure.title('Тест на успешный выход пользователя из своего аккаунта.')
     def test_logout_as_user(self, common_user_registered, super_admin):
-        #\assert api_manager.session.headers['Authorization'] == f"Bearer {login_as_user_response['accessToken']}"
-        assert common_user_registered.api.session.cookies['refresh_token'] == common_user_registered.refreshToken.get('refreshToken')
+        with allure.step('Проверяется то, что после регистрации и аутентификации пользователя (в фикстуре common_user_registered) в куках сессии установлен токен обновления, полученный при аутентификации пользователя.'):
+            #\assert api_manager.session.headers['Authorization'] == f"Bearer {login_as_user_response['accessToken']}"
+            assert common_user_registered.api.session.cookies['refresh_token'] == common_user_registered.refreshToken.get('refreshToken')
 
-        common_user_registered.api.auth_api.logout()
-        #assert 'Authorization' not in api_manager.session.headers
-        #assert api_manager.session.headers['Authorization'] == ''
-        assert ['refresh_token'] not in common_user_registered.api.session.cookies
+        with allure.step('Отправляется запрос на логаут. После чего проверяется, что в куках сессии больше нет токена обновления.'):
+            common_user_registered.api.auth_api.logout()
+            #assert 'Authorization' not in api_manager.session.headers
+            #assert api_manager.session.headers['Authorization'] == ''
+            assert ['refresh_token'] not in common_user_registered.api.session.cookies
 
-        #super_admin.api.user_api.delete_user(common_user_registered.id)
+            #super_admin.api.user_api.delete_user(common_user_registered.id)
 
 
 
@@ -166,30 +169,32 @@ class TestAuthAPIPositive:
     @allure.feature("Функционал работы с пользователем.")
     @allure.title('Тест на создание пользователя админом.')
     def test_create_user_as_admin(self, super_admin, fixture_data_for_user_creation_by_admin):
-        fixture_data_for_user_creation_by_admin = fixture_data_for_user_creation_by_admin()
-        create_user_response = super_admin.api.user_api.create_user_as_admin(fixture_data_for_user_creation_by_admin)
+        with allure.step('Отправляется запрос на создание нового пользователя и данные из ответа проверяются.'):
+            fixture_data_for_user_creation_by_admin = fixture_data_for_user_creation_by_admin()
+            create_user_response = super_admin.api.user_api.create_user_as_admin(fixture_data_for_user_creation_by_admin)
 
-        assert 'id' in create_user_response, "ID пользователя отсутствует в ответе."
-        assert create_user_response["email"] == fixture_data_for_user_creation_by_admin["email"], "Email не совпадает."
-        assert create_user_response["fullName"] == fixture_data_for_user_creation_by_admin["fullName"], "Имя и фамилия не совпадает."
-        assert create_user_response["roles"] == ['USER'], 'Роль USER не присвоена зарегистрированному пользователю.'
-        assert create_user_response['verified'] == fixture_data_for_user_creation_by_admin["verified"], 'Зарегистрированный пользователь не верефицирован.'
-        #assert create_user_response['banned'] == fixture_data_for_user_creation_by_admin["banned"], 'Зарегистрированный пользователь забанен.'
-        assert date.today().strftime('%Y-%m-%d') in create_user_response[
-            'createdAt'], 'Дата регистрации пользователя не корректна.'
+            assert 'id' in create_user_response, "ID пользователя отсутствует в ответе."
+            assert create_user_response["email"] == fixture_data_for_user_creation_by_admin["email"], "Email не совпадает."
+            assert create_user_response["fullName"] == fixture_data_for_user_creation_by_admin["fullName"], "Имя и фамилия не совпадает."
+            assert create_user_response["roles"] == ['USER'], 'Роль USER не присвоена зарегистрированному пользователю.'
+            assert create_user_response['verified'] == fixture_data_for_user_creation_by_admin["verified"], 'Зарегистрированный пользователь не верефицирован.'
+            #assert create_user_response['banned'] == fixture_data_for_user_creation_by_admin["banned"], 'Зарегистрированный пользователь забанен.'
+            assert date.today().strftime('%Y-%m-%d') in create_user_response[
+                'createdAt'], 'Дата регистрации пользователя не корректна.'
 
-        get_created_user_response = super_admin.api.user_api.get_user_info(create_user_response)
+            with allure.step('Отправляется запрос на получение данных созданного пользователя из БД. Данные проверяются. После чего пользователь удаляется из БД.'):
+                get_created_user_response = super_admin.api.user_api.get_user_info(create_user_response)
 
-        assert get_created_user_response['id'] == create_user_response['id'], 'ID пользователя не корректное.'
-        assert get_created_user_response["email"] == fixture_data_for_user_creation_by_admin["email"], "Email не совпадает."
-        assert get_created_user_response["fullName"] == fixture_data_for_user_creation_by_admin["fullName"], "Имя и фамилия не совпадает."
-        assert get_created_user_response["roles"] == ['USER'], 'Роль USER не присвоена зарегистрированному пользователю.'
-        assert get_created_user_response['verified'] == fixture_data_for_user_creation_by_admin["verified"], 'Зарегистрированный пользователь не верефицирован.'
-        #assert get_created_user_response['banned'] == fixture_data_for_user_creation_by_admin["banned"], 'Зарегистрированный пользователь забанен.'
-        assert date.today().strftime('%Y-%m-%d') in get_created_user_response[
-            'createdAt'], 'Дата регистрации пользователя не корректна.'
+                assert get_created_user_response['id'] == create_user_response['id'], 'ID пользователя не корректное.'
+                assert get_created_user_response["email"] == fixture_data_for_user_creation_by_admin["email"], "Email не совпадает."
+                assert get_created_user_response["fullName"] == fixture_data_for_user_creation_by_admin["fullName"], "Имя и фамилия не совпадает."
+                assert get_created_user_response["roles"] == ['USER'], 'Роль USER не присвоена зарегистрированному пользователю.'
+                assert get_created_user_response['verified'] == fixture_data_for_user_creation_by_admin["verified"], 'Зарегистрированный пользователь не верефицирован.'
+                #assert get_created_user_response['banned'] == fixture_data_for_user_creation_by_admin["banned"], 'Зарегистрированный пользователь забанен.'
+                assert date.today().strftime('%Y-%m-%d') in get_created_user_response[
+                    'createdAt'], 'Дата регистрации пользователя не корректна.'
 
-        super_admin.api.user_api.delete_user(create_user_response['id'])
+                super_admin.api.user_api.delete_user(create_user_response['id'])
 
 
     @allure.tag("smoke", "regression")
@@ -198,33 +203,35 @@ class TestAuthAPIPositive:
     @allure.title('Тест на изменение данных пользователя админом.')
     def test_change_user_as_admin(self, super_admin, fixture_data_for_user_creation_by_admin,
                                   fixture_test_user_created_by_admin_changed_data):
-        fixture_data_for_user_creation_by_admin = fixture_data_for_user_creation_by_admin()
+        with allure.step('Отправляется запрос на создание нового пользователя. Затем отправляется запрос на изменение данных пользователя и данные из ответа проверяются.'):
+            fixture_data_for_user_creation_by_admin = fixture_data_for_user_creation_by_admin()
 
-        create_user_response = super_admin.api.user_api.create_user_as_admin(fixture_data_for_user_creation_by_admin)
+            create_user_response = super_admin.api.user_api.create_user_as_admin(fixture_data_for_user_creation_by_admin)
 
-        change_user_response = super_admin.api.user_api.change_user_data_as_admin(create_user_response, fixture_test_user_created_by_admin_changed_data)
+            change_user_response = super_admin.api.user_api.change_user_data_as_admin(create_user_response, fixture_test_user_created_by_admin_changed_data)
 
-        assert change_user_response["email"] == fixture_test_user_created_by_admin_changed_data["email"], "Email не совпадает"
-        #assert change_user_response["banned"] == fixture_test_user_created_by_admin_changed_data["banned"], "Забенен ли пользователь не совпадает"
-        #assert change_user_response['id'] == create_user_response['id'], 'ID пользователя не корректный.'
-        assert change_user_response["fullName"] == create_user_response["fullName"], "Имя и фамилия не совпадает."
-        assert change_user_response["roles"] == create_user_response['roles'], 'Роль USER не присвоена зарегистрированному пользователю.'
-        assert change_user_response['verified'] == create_user_response['verified'], 'Зарегистрированный пользователь не верефицирован.'
-        assert date.today().strftime('%Y-%m-%d') in change_user_response[
-            'createdAt'], 'Дата регистрации пользователя отсутствует.'
+            assert change_user_response["email"] == fixture_test_user_created_by_admin_changed_data["email"], "Email не совпадает"
+            #assert change_user_response["banned"] == fixture_test_user_created_by_admin_changed_data["banned"], "Забенен ли пользователь не совпадает"
+            #assert change_user_response['id'] == create_user_response['id'], 'ID пользователя не корректный.'
+            assert change_user_response["fullName"] == create_user_response["fullName"], "Имя и фамилия не совпадает."
+            assert change_user_response["roles"] == create_user_response['roles'], 'Роль USER не присвоена зарегистрированному пользователю.'
+            assert change_user_response['verified'] == create_user_response['verified'], 'Зарегистрированный пользователь не верефицирован.'
+            assert date.today().strftime('%Y-%m-%d') in change_user_response[
+                'createdAt'], 'Дата регистрации пользователя отсутствует.'
 
-        get_user_after_change_response = super_admin.api.user_api.get_user_info(create_user_response)
+        with allure.step('Отправляется запрос на получение обновленных данных созданного пользователя из БД. Данные проверяются. После чего пользователь удаляется из БД.'):
+            get_user_after_change_response = super_admin.api.user_api.get_user_info(create_user_response)
 
-        assert get_user_after_change_response["email"] == fixture_test_user_created_by_admin_changed_data["email"], "Email не совпадает"
-        #assert get_user_after_change_response["banned"] == fixture_test_user_created_by_admin_changed_data["banned"], "Забенен ли пользователь не совпадает"
-        assert get_user_after_change_response['id'] == create_user_response['id'], 'ID пользователя не корректное.'
-        assert get_user_after_change_response["fullName"] ==  create_user_response["fullName"], "Имя и фамилия не совпадает."
-        assert get_user_after_change_response["roles"] == create_user_response['roles'], 'Роль USER не присвоена зарегистрированному пользователю.'
-        assert get_user_after_change_response['verified'] == create_user_response['verified'], 'Зарегистрированный пользователь не верефицирован.'
-        assert date.today().strftime('%Y-%m-%d') in get_user_after_change_response[
-            'createdAt'], 'Дата регистрации пользователя отсутствует.'
+            assert get_user_after_change_response["email"] == fixture_test_user_created_by_admin_changed_data["email"], "Email не совпадает"
+            #assert get_user_after_change_response["banned"] == fixture_test_user_created_by_admin_changed_data["banned"], "Забенен ли пользователь не совпадает"
+            assert get_user_after_change_response['id'] == create_user_response['id'], 'ID пользователя не корректное.'
+            assert get_user_after_change_response["fullName"] ==  create_user_response["fullName"], "Имя и фамилия не совпадает."
+            assert get_user_after_change_response["roles"] == create_user_response['roles'], 'Роль USER не присвоена зарегистрированному пользователю.'
+            assert get_user_after_change_response['verified'] == create_user_response['verified'], 'Зарегистрированный пользователь не верефицирован.'
+            assert date.today().strftime('%Y-%m-%d') in get_user_after_change_response[
+                'createdAt'], 'Дата регистрации пользователя отсутствует.'
 
-        super_admin.api.user_api.delete_user(create_user_response['id'])
+            super_admin.api.user_api.delete_user(create_user_response['id'])
 
 
     @allure.tag("smoke", "regression")
