@@ -18,7 +18,7 @@ class AuthAPI(CustomRequester):
 
 
     @allure.step("Аутентификация.")
-    def authenticate(self, registered_user_data, expected_status=201):
+    def authenticate(self, registered_user_data, expected_status=200):
         try:
             login_data = vars(
                 UserDataForLoggingInModel(
@@ -37,7 +37,7 @@ class AuthAPI(CustomRequester):
             expected_status=expected_status
         )
 
-        if expected_status != 201 and login_as_user_response.status_code != 201:
+        if expected_status != 200 and login_as_user_response.status_code != 200:
             return login_as_user_response
         else:
             try:
@@ -100,7 +100,7 @@ class AuthAPI(CustomRequester):
             expected_status=expected_status
         )
 
-        if expected_status != 200 and response.status_code != 200:
+        if expected_status != 201 and response.status_code != 201:
             return response.json()
         else:
             try:
@@ -120,7 +120,7 @@ class AuthAPI(CustomRequester):
         )
 
     @allure.step("Обновление токена.")
-    def refresh_tokens(self, expected_status=201):
+    def refresh_tokens(self, expected_status=200):
         refresh_tokens_response = self.send_request(
             method="GET",
             endpoint=REFRESH_TOKENS_ENDPOINT,

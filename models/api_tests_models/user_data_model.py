@@ -1,5 +1,4 @@
 from pydantic import BaseModel, Field, model_validator, field_validator
-from sqlalchemy import Column, String, DateTime, Boolean
 from sqlalchemy.orm import declarative_base
 
 from constants.roles import Roles
@@ -61,15 +60,3 @@ class UserDataForLoggingInModel(BaseModel):
         if '@' not in value:
             raise ValueError("В имейле д.б. @.")
         return value
-
-class UserDBModel(Base):
-    __tablename__ = 'users'
-    id = Column(String, primary_key=True)
-    email = Column(String)
-    full_name = Column(String)
-    password = Column(String)
-    created_at = Column(DateTime)
-    updated_at = Column(DateTime)
-    verified = Column(Boolean)
-    banned = Column(Boolean)
-    roles = Column(String)

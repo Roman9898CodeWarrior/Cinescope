@@ -2,11 +2,9 @@ from datetime import datetime
 
 
 class TestPaymentAPIPositive:
-    def test_create_payment(self, fixture_payment, common_user_registered, super_admin):
+    def test_create_payment(self, fixture_payment, common_user_registered):
         create_payment_response = common_user_registered.api.payment_api.create_payment(fixture_payment())
         assert create_payment_response['status'] == 'SUCCESS', 'Статус в теле ответа не корректный.'
-
-        #super_admin.api.user_api.delete_user(common_user_registered.id)
 
 
     def test_get_user_payments(self, fixture_payment, common_user_registered, super_admin):
@@ -17,10 +15,11 @@ class TestPaymentAPIPositive:
 
         get_user_payments_response = common_user_registered.api.payment_api.get_user_payments()
 
-        assert get_user_payments_response['root'][0].movieId == movie_id, 'id фильма не совпадает.'
-        assert get_user_payments_response['root'][0].userId == user_id, 'id пользователя не совпадает'
+        last_payment_index = len(get_user_payments_response['root'])-1
 
-        #super_admin.api.user_api.delete_user(common_user_registered.id)
+        assert get_user_payments_response['root'][last_payment_index].movieId == movie_id, 'id фильма не совпадает.'
+        assert get_user_payments_response['root'][last_payment_index].userId == user_id, 'id пользователя не совпадает'
+
 
 
     '''

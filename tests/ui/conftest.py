@@ -45,3 +45,20 @@ def get_data_for_student_registration_form():
     except ValidationError as e:
         pytest.fail(f'Ошибка валидации: {e}')
         logger.info(f'Ошибка валидации: {e}')
+
+'''
+@pytest.fixture(autouse=True)
+def page_error_handler(page):
+    seen_errors = set()
+
+    def handle_page_error(exception):
+        key = f"{exception.message}\n{exception.stack}"
+        if key not in seen_errors:
+            seen_errors.add(key)
+            print(f"\n🔥 Ошибка на фронте:\n{exception.message}\n{exception.stack}\n")
+            raise Exception(f"Ошибка на фронте: {exception.message}")
+
+    page.on("pageerror", handle_page_error)
+    yield
+    page.remove_listener("pageerror", handle_page_error)
+'''

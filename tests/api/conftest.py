@@ -5,7 +5,7 @@ import allure
 import requests
 import pytest
 from pydantic import ValidationError
-from api.api_manager import ApiManager
+from api_classes.api_manager import ApiManager
 from constants.constants import REGISTER_ENDPOINT
 from constants.roles import Roles
 from data.api_tests_data.payment_data import PaymentData
@@ -15,7 +15,8 @@ from entities.user import CommonUser
 from entities.user import AdminUser
 from models.api_tests_models.payment_data_model import DataForPaymentCreationModel
 from models.api_tests_models.get_user_info_response_model import RegisterCreateGetOrDeleteUserResponseModel
-from models.api_tests_models.user_data_model import UserDataForRegistrationModel, UserDBModel
+from models.api_tests_models.user_data_model import UserDataForRegistrationModel
+from models.db_tests_models.user_model import UserDBModel
 from resources.creds import SuperAdminCreds
 from utils.data_generator import DataGenerator
 from faker import Faker

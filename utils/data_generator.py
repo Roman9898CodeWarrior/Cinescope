@@ -105,3 +105,7 @@ class DataGenerator:
     @staticmethod
     def get_valid_phone_number():
         return faker.msisdn()
+
+if __name__ == "__main__":
+    print(DataGenerator.get_valid_phone_number())
+

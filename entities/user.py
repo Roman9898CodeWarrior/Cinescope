@@ -1,4 +1,4 @@
-from api.api_manager import ApiManager
+from api_classes.api_manager import ApiManager
 
 
 class CommonUser:
