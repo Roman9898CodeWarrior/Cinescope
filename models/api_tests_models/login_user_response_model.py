@@ -23,7 +23,7 @@ class UserModel(BaseModel):
             Roles: lambda v: v.value
         }
 
-class LogInResponseModel(BaseModel):
+class AuthenticationResponseModel(BaseModel):
     user: UserModel
     accessToken: str
     refreshToken: str

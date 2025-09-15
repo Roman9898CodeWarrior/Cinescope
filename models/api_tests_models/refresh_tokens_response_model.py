@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-class RefreshTokensResponseModel(BaseModel):
+class RefreshTokenResponseModel(BaseModel):
     accessToken: str
     refreshToken: str
     expiresIn: int

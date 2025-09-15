@@ -24,36 +24,6 @@ from utils.request_utils import RequestUtils
 
 faker = Faker()
 
-@pytest.fixture(scope="module")
-def db_session():
-    db_session = get_db_session()
-    yield db_session
-    db_session.close()
-
-@pytest.fixture(scope="module")
-def db_session_with_adding_new_user_to_db():
-    session = get_db_session()
-
-    test_user = UserDBModel(
-        id="test_id",
-        email=DataGenerator.generate_valid_random_email(),
-        full_name=DataGenerator.generate_random_name(),
-        password=DataGenerator.generate_valid_random_password(),
-        created_at=datetime.now(),
-        updated_at=datetime.now(),
-        verified=False,
-        banned=False,
-        roles="{USER}"
-    )
-    session.add(test_user)
-    session.commit()
-
-    yield session
-
-    session.delete(test_user)
-    session.commit()
-    session.close()
-
 @pytest.fixture(scope="session")
 def basic_session():
     http_session = requests.Session()

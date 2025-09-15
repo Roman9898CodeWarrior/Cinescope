@@ -51,7 +51,7 @@ class UserDataForCreationByAdminModel(BaseModel):
             raise ValueError("В имейле д.б. @.")
         return value
 
-class UserDataForLoggingInModel(BaseModel):
+class UserDataForAuthenticationModel(BaseModel):
     email: str
     password: str = Field(min_length=8, max_length=32)
 

@@ -36,7 +36,7 @@ class RegisterCreateGetOrDeleteUserResponseModel(BaseModel):
         return value
 
 
-class ChangeUserResponseModel(BaseModel):
+class ChangeUserDataResponseModel(BaseModel):
     email: str = Field(pattern=r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
     fullName: str
     roles: list[Roles]

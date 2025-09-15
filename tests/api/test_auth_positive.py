@@ -14,7 +14,7 @@ class TestAuthAPIPositive:
     @allure.label("owner", "Roman")
     @allure.feature("Функционал работы с пользователем.")
     @allure.title('Тест на успешную регистрацию пользователя.')
-    def test_register_user(self, api_manager, fixture_data_for_user_registration, super_admin, db_session):
+    def test_register_user(self, api_manager, fixture_data_for_user_registration, super_admin):
         with allure.step('Отправляется запрос на регистрацию нового пользователя и данные из ответа проверяются.'):
             register_user_response = api_manager.auth_api.register_user(fixture_data_for_user_registration)
 
@@ -37,14 +37,6 @@ class TestAuthAPIPositive:
             #assert get_user_response['banned'] == False, 'Зарегистрированный пользователь забанен.'
             assert date.today().strftime('%Y-%m-%d') in get_user_response[
                 'createdAt'], 'Дата регистрации пользователя не корректна.'
-
-            '''
-            users_from_db = db_session.query(UserDBModel).filter(UserDBModel.id == register_user_response.id)
-    
-            assert users_from_db.count() == 1, "обьект не попал в базу данных"
-            
-            user_from_db = users_from_db.first()
-            '''
 
             super_admin.api.user_api.delete_user(register_user_response['id'])
 

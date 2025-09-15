@@ -14,6 +14,7 @@ class PaymentAPI(CustomRequester):
     def __init__(self, session):
         super().__init__(session, PAYMENT_URL)
 
+
     @allure.step('Создание платежа.')
     def create_payment(self, payment_data,  expected_status=201):
         try:

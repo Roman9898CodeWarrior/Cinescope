@@ -26,7 +26,7 @@ class UserModel(BaseModel):
             Roles: lambda v: v.value
         }
 
-class GetAllUsersResponseModel(BaseModel):
+class GetAllUsersDataResponseModel(BaseModel):
     users: list[UserModel]
     count: int
     page: int

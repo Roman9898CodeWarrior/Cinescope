@@ -7,9 +7,10 @@ from pydantic import ValidationError
 from constants.constants import REGISTER_ENDPOINT, LOGIN_ENDPOINT, LOGOUT_ENDPOINT, REFRESH_TOKENS_ENDPOINT, AUTH_URL
 from custom_requester.custom_requester import CustomRequester
 from models.api_tests_models.get_user_info_response_model import RegisterCreateGetOrDeleteUserResponseModel
-from models.api_tests_models.login_user_response_model import LogInResponseModel
-from models.api_tests_models.refresh_tokens_response_model import RefreshTokensResponseModel
-from models.api_tests_models.user_data_model import UserDataForLoggingInModel, UserDataForRegistrationModel
+from models.api_tests_models.login_user_response_model import AuthenticationResponseModel
+from models.api_tests_models.refresh_tokens_response_model import RefreshTokenResponseModel
+from models.api_tests_models.user_data_model import UserDataForAuthenticationModel, UserDataForRegistrationModel
+from utils.data_validator import DataValidator
 
 
 class AuthAPI(CustomRequester):
@@ -19,96 +20,64 @@ class AuthAPI(CustomRequester):
 
     @allure.step("Аутентификация.")
     def authenticate(self, registered_user_data, expected_status=200):
-        try:
-            login_data = vars(
-                UserDataForLoggingInModel(
-                    email=registered_user_data['email'],
-                    password=registered_user_data['password']
-                )
-            )
-        except ValidationError as e:
-            pytest.fail(f'Ошибка валидации: {e}')
-            logger.info(f'Ошибка валидации: {e}')
+        user_data_for_authentication_validated = DataValidator.validate_user_data_for_authentication(registered_user_data)
 
         login_as_user_response = self.send_request(
             method="POST",
             endpoint=LOGIN_ENDPOINT,
-            data=login_data,
+            data=user_data_for_authentication_validated,
             expected_status=expected_status
         )
 
         if expected_status != 200 and login_as_user_response.status_code != 200:
             return login_as_user_response
         else:
-            try:
-                login_as_user_response_validated = vars(LogInResponseModel(**login_as_user_response.json()))
-                access_token = login_as_user_response_validated['accessToken']
-                self._update_session_headers(Authorization=f"Bearer {access_token}")
-                return login_as_user_response_validated
-            except ValidationError as e:
-                pytest.fail(f'Ошибка валидации: {e}')
-                logger.info(f'Ошибка валидации: {e}')
+            login_as_user_response_validated = DataValidator.validate_authentication_response_data(login_as_user_response)
+            access_token = login_as_user_response_validated['accessToken']
+            self._update_session_headers(Authorization=f"Bearer {access_token}")
+            return login_as_user_response_validated
 
 
     def height_order_authenticate_function(self, registered_user_data, expected_status=201):
         def _height_order_authenticate_function():
-            try:
-                login_data = vars(
-                    UserDataForLoggingInModel(
-                        email=registered_user_data['email'],
-                        password=registered_user_data['password']
-                    )
-                )
-            except ValidationError as e:
-                pytest.fail(f'Ошибка валидации: {e}')
-                logger.info(f'Ошибка валидации: {e}')
+            user_data_for_authentication_validated = DataValidator.validate_user_data_for_authentication(
+                registered_user_data)
 
             login_as_user_response = self.send_request(
                 method="POST",
                 endpoint=LOGIN_ENDPOINT,
-                data=login_data,
+                data=user_data_for_authentication_validated,
                 expected_status=expected_status
             )
 
-            if expected_status != 201 and login_as_user_response.status_code != 201:
+            if expected_status != 200 and login_as_user_response.status_code != 200:
                 return login_as_user_response
             else:
-                try:
-                    login_as_user_response_validated = vars(LogInResponseModel(**login_as_user_response.json()))
-                    access_token = login_as_user_response_validated['accessToken']
-                    self._update_session_headers(Authorization=f"Bearer {access_token}")
-                    return login_as_user_response_validated
-                except ValidationError as e:
-                    pytest.fail(f'Ошибка валидации: {e}')
-                    logger.info(f'Ошибка валидации: {e}')
+                login_as_user_response_validated = DataValidator.validate_authentication_response_data(
+                    login_as_user_response)
+                access_token = login_as_user_response_validated['accessToken']
+                self._update_session_headers(Authorization=f"Bearer {access_token}")
+                return login_as_user_response_validated
 
         return _height_order_authenticate_function
 
 
     @allure.step("Регистрация пользователя.")
-    def register_user(self, test_user_data, expected_status=201):
-        try:
-            test_user_data_validated = vars(UserDataForRegistrationModel(**test_user_data))
-        except ValidationError as e:
-            pytest.fail(f'Ошибка валидации: {e}')
-            logger.info(f'Ошибка валидации: {e}')
+    def register_user(self, data_for_registration, expected_status=201):
+        data_for_registration_validated = DataValidator.validate_user_data_for_registration(data_for_registration)
 
-        response = self.send_request(
+        register_user_response = self.send_request(
             method="POST",
             endpoint=REGISTER_ENDPOINT,
-            data=test_user_data_validated,
+            data=data_for_registration_validated,
             expected_status=expected_status
         )
 
-        if expected_status != 201 and response.status_code != 201:
-            return response.json()
+        if expected_status != 201 and register_user_response.status_code != 201:
+            return register_user_response.json()
         else:
-            try:
-                response_validated = vars(RegisterCreateGetOrDeleteUserResponseModel(**response.json()))
-                return response_validated
-            except ValidationError as e:
-                pytest.fail(f'Ошибка валидации: {e}')
-                logger.info(f'Ошибка валидации: {e}')
+            registration_user_response_data_validated = DataValidator.validate_registration_creation_delete_or_getuserdata_response_data(register_user_response)
+            return registration_user_response_data_validated
 
 
     @allure.step("Логаут.")
@@ -121,17 +90,14 @@ class AuthAPI(CustomRequester):
 
     @allure.step("Обновление токена.")
     def refresh_tokens(self, expected_status=200):
-        refresh_tokens_response = self.send_request(
+        refresh_token_response = self.send_request(
             method="GET",
             endpoint=REFRESH_TOKENS_ENDPOINT,
             expected_status=expected_status
         )
 
-        try:
-            refresh_tokens_response_validated = vars(RefreshTokensResponseModel(**refresh_tokens_response.json()))
-            return refresh_tokens_response_validated
-        except ValidationError as e:
-            pytest.fail(f'Ошибка валидации: {e}')
-            logger.info(f'Ошибка валидации: {e}')
+        refresh_tokens_response_data_validated = DataValidator.validate_refresh_token_response_data(refresh_token_response)
+        return refresh_tokens_response_data_validated
+
 
 
