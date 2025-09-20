@@ -4,12 +4,12 @@ import allure
 import pytest
 from pydantic import ValidationError
 
-from models.api_tests_models.get_all_users_response_model import GetAllUsersDataResponseModel
-from models.api_tests_models.get_user_info_response_model import RegisterCreateGetOrDeleteUserResponseModel, \
+from API.api_tests_models.get_all_users_response_model import GetAllUsersDataResponseModel
+from API.api_tests_models.get_user_info_response_model import RegisterCreateGetOrDeleteUserResponseModel, \
     ChangeUserDataResponseModel
-from models.api_tests_models.login_user_response_model import AuthenticationResponseModel
-from models.api_tests_models.refresh_tokens_response_model import RefreshTokenResponseModel
-from models.api_tests_models.user_data_model import UserDataForAuthenticationModel, UserDataForRegistrationModel, \
+from API.api_tests_models.login_user_response_model import AuthenticationResponseModel
+from API.api_tests_models.refresh_tokens_response_model import RefreshTokenResponseModel
+from API.api_tests_models.user_data_model import UserDataForAuthenticationModel, UserDataForRegistrationModel, \
     UserDataForCreationByAdminModel
 
 
