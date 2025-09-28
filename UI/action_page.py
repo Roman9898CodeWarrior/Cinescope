@@ -21,7 +21,7 @@ class PageAction:
         locator.click()
 
     @allure.step("Ожидание загрузки страницы: {url}")
-    def wait_redirect_for_url(self, url: str):
+    def wait_redirection_to_url(self, url: str):
         self.page.wait_for_url(url)
         assert self.page.url == url, "Редирект на домашнюю старницу не произошел"
 
@@ -30,7 +30,7 @@ class PageAction:
         return locator.text_content()
 
     @allure.step("Ожидание появления или исчезновения элемента: {locator}, state = {state}")
-    def wait_for_element(self, locator: Locator, state: str = "visible"):
+    def wait_for_element_to_be_visible_or_hidden(self, locator: Locator, state: str = "visible"):
         if state == 'visible':
             expect(locator).to_be_visible()
         else:

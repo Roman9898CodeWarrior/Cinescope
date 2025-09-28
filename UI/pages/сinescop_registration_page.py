@@ -35,7 +35,7 @@ class CinescopRegisterPage(BasePage):
     # -------------------------------------------------------------------------------------------
     # Локальные проверки.
     def assert_was_redirect_to_login_page(self):
-        self.wait_redirect_for_url(f"{self.home_url}login")
+        self.wait_redirection_to_url(f"{self.home_url}login")
 
         #self.make_screenshot_and_attach_to_allure()
 

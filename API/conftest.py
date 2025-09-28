@@ -21,13 +21,13 @@ from utils.request_utils import RequestUtils
 
 faker = Faker()
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def basic_session():
     http_session = requests.Session()
     yield http_session
     http_session.close()
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def api_manager(basic_session):
     return ApiManager(basic_session)
 '''
@@ -48,7 +48,7 @@ def user_session():
 
 
 @pytest.fixture
-@allure.step('Аутентификация с учеrequests.ткой админа.')
+@allure.step('Аутентификация с учеткой админа.')
 def super_admin(user_session):
     new_session = user_session()
 

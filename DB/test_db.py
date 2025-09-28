@@ -13,7 +13,7 @@ class TestsDB:
         from_account = session.query(AccountTransactionTemplate).filter_by(user=from_account).one()
         to_account = session.query(AccountTransactionTemplate).filter_by(user=to_account).one()
 
-        print(vars(to_account))
+        #print(vars(to_account))
 
         try:
             if from_account.balance >= amount:

@@ -92,8 +92,6 @@ class TestAuthAPIPositive:
             #assert api_manager.session.headers['Authorization'] == ''
             assert ['refresh_token'] not in common_user_registered.api.session.cookies
 
-            #super_admin.api.user_api.delete_user(common_user_registered.id)
-
 
 
     '''
@@ -126,7 +124,6 @@ class TestAuthAPIPositive:
         # assert api_manager.session.headers['Authorization'] == f"Bearer {refresh_tokens_response['accessToken']}"
         assert common_user_registered.api.session.cookies['refresh_token'] == refresh_tokens_response['refreshToken']
 
-       #super_admin.api.user_api.delete_user(common_user_registered.id)
 
 
     @allure.tag("smoke", "regression")

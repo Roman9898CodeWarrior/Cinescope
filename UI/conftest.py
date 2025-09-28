@@ -19,7 +19,7 @@ def browser(playwright):
     playwright.stop()
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture()
 def context(browser):
     context = browser.new_context()
     context.tracing.start(screenshots=True, snapshots=True, sources=True)

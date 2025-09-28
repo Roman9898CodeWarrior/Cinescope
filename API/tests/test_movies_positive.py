@@ -15,3 +15,4 @@ class TestMoviesAPIPositive:
                 assert movie['published'] == False
             else:
                 assert movie['published'] == True
+                

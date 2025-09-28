@@ -15,9 +15,9 @@ class BasePage(PageAction):
     @allure.step("Переход на главную страницу, из шапки сайта")
     def go_to_home_page(self):
         self.click_element(self.go_to_home_page_button)
-        self.wait_redirect_for_url(self.home_url)
+        self.wait_redirection_to_url(self.home_url)
 
     @allure.step("Переход на страницу 'Все фильмы, из шапки сайта'")
     def go_to_all_movies(self):
         self.click_element(self.go_to_all_movies_page_button)
-        self.wait_redirect_for_url(f"{self.home_url}movies")
+        self.wait_redirection_to_url(f"{self.home_url}movies")

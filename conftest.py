@@ -16,7 +16,7 @@ from resources.creds import SuperAdminCreds
 from utils.request_utils import RequestUtils
 
 
-@pytest.fixture
+@pytest.fixture()
 def user_session():
     user_sessions = []
 
@@ -77,5 +77,5 @@ def fixture_register_user_response(super_admin, fixture_data_for_user_registrati
 
 @pytest.fixture
 @allure.step('Получение из response.request ответа на запрос регистрации пользователя данных зарегистрированного пользователя (включая пароль, которого нет в самом ответе на регистрацию).')
-def get_registered_user_data_from_response_request_of_registration_response(fixture_register_user_response):
+def get_registered_user_data_from_request_of_registration_response(fixture_register_user_response):
     return RequestUtils.get_request_body(fixture_register_user_response)
